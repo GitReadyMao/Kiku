@@ -1,0 +1,17 @@
+$success: #7952b3;
+
+@import "bootstrap/scss/bootstrap.scss";
+
+body {
+  padding: 1.5rem;
+  background: rgb(189,217,155);
+  background: linear-gradient(139deg, rgba(189,217,155,1) 50%, rgba(255,183,197,1) 75%); 
+}
+center {
+  position: relative;
+  width: auto;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
