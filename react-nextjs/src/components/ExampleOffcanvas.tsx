@@ -39,7 +39,7 @@ const ExampleOffcanvas: React.FC<ExampleOffcanvasProps> = ({ className }) => {
               <Form.Check type="checkbox" label="Keep me logged in" />
             </Form.Group>
             <Button variant="primary" type="submit">
-              Submit
+              Login
             </Button>
           </Form>
         </Offcanvas.Body>

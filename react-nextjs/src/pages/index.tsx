@@ -17,7 +17,7 @@ export default function Home() {
       <Container as="main" className="py-4 px-3 mx-auto">
         <Header />
 
-        <h1>きく</h1>
+        <h1>Kiku</h1>
 
         <ExampleComponents />
 

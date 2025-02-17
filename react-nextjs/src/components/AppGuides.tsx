@@ -26,10 +26,9 @@ const GUIDES = [
 const AppGuides: React.FC = () => {
   return (
     <>
-      <h2>Guides</h2>
+      <h2>What is Kiku?</h2>
       <p>
-        Read more detailed instructions and documentation on using or
-        contributing to Bootstrap.
+        Our app!
       </p>
       {GUIDES.map((guide) => {
         return (
