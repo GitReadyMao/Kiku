@@ -14,7 +14,7 @@ const ExamplePopover: React.FC = () => {
         </Popover>
       }
     >
-      <Anchor className="text-success">Example popover</Anchor>
+      <Anchor className="text-success">Register now</Anchor>
     </OverlayTrigger>
   );
 };
