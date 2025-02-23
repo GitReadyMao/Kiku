@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Landing Page : きく</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: "Raleway", sans-serif
+        }
+
+        body,
+        html {
+            height: 100%;
+            line-height: 1.8;
+        }
+
+        /* Full height image header */
+        .bgimg-1 {
+            background-position: center;
+            background-size: cover;
+            background-image: url("pngs/KikuLanding.png");
+            min-height: 100%;
+        }
+
+        .w3-bar .w3-button {
+            padding: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar (sit on top) -->
+    <div class="w3-top">
+        <div class="w3-bar w3-white w3-card" id="myNavbar">
+            <a href="#home" class="w3-bar-item w3-button w3-wide">Welcome to きく</a>
+            <!-- Right-sided navbar links -->
+            <div class="w3-right w3-hide-small">
+                <a href="#about" class="w3-bar-item w3-button">ABOUT</a>
+                <a href="#team" class="w3-bar-item w3-button"><i class="fa fa-users"></i> TEAM</a>
+                <a href="#lesson" class="w3-bar-item w3-button"><i class="fa fa-th"></i> LESSON</a>
+                <a href="#login" class="w3-bar-item w3-button"><i class="fa fa-user"></i> LOGIN</a>
+            </div>
+            <!-- Hide right-floated links on small screens and replace them with a menu icon -->
+
+            <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium"
+                onclick="w3_open()">
+                <i class="fa fa-bars"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sidebar on small screens when clicking the menu icon -->
+    <nav class="w3-sidebar w3-bar-block w3-black w3-card w3-animate-left w3-hide-medium w3-hide-large"
+        style="display:none" id="mySidebar">
+        <a href="javascript:void(0)" onclick="w3_close()" class="w3-bar-item w3-button w3-large w3-padding-16">Close
+            ×</a>
+        <a href="#about" onclick="w3_close()" class="w3-bar-item w3-button">ABOUT</a>
+        <a href="#team" onclick="w3_close()" class="w3-bar-item w3-button">TEAM</a>
+        <a href="#lesson" onclick="w3_close()" class="w3-bar-item w3-button">LESSON</a>
+        <a href="#login" onclick="w3_close()" class="w3-bar-item w3-button">LOGIN</a>
+    </nav>
+
+    <!-- Header with full-height image -->
+    <header class="bgimg-1 w3-display-container w3-grayscale-min" id="home">
+        <div class="w3-display-left w3-text-white" style="padding:48px">
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <div class="w3-container" style="padding:128px 16px" id="about">
+        <h3 class="w3-center">ABOUT きく</h3>
+        <p class="w3-center w3-large">Our Story, Mission, and Goals</p>
+        <div class="w3-row-padding w3-center" style="margin-top:64px">
+            <div class="w3-third">
+                <i class="fa  fa-book w3-margin-bottom w3-jumbo w3-center"></i>
+                <p class="w3-large">Story</p>
+                <p>With three of our team members having gone through the Japanese program at UF, we’ve experienced both
+                    the benefits and drawbacks of the structured system for
+                    learning Japanese. In response to this experience, we started to brainstorm ideas that could benefit
+                    not only our learning experience but also that of other
+                    students either currently going through the Japanese program or that take it in the future.</p>
+            </div>
+            <div class="w3-third">
+                <i class="fa fa-bullseye w3-margin-bottom w3-jumbo"></i>
+                <p class="w3-large">Mission</p>
+                <p>We aim to develop a web application which focuses on teaching vocabulary useful for students at the
+                    Intermediate to Advanced levels. Kiku will teach students
+                    vocabulary through small mini-lessons containing the definition(s) and potentially other useful
+                    information. Furthermore, Kiku will use spaced repetition to help
+                    students retain information in their long-term memory instead of forgetting terms quickly after a
+                    session of cramming.</p>
+            </div>
+            <div class="w3-third">
+                <i class="fa fa-check-square w3-margin-bottom w3-jumbo"></i>
+                <p class="w3-large">Goals</p>
+                <p>We believe that Kiku will provide students learning Japanese with an easy-to-use, effective, and fun
+                    tool that can serve as a good complement to the UF
+                    Japanese program or other methods of Japanese language learning.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rmvd We Know how to Design -->
+
+    <!-- Team Section -->
+    <div class="w3-container w3-light-grey" style="padding:64px 16px" id="team">
+        <h3 class="w3-center">Senior Citizens</h3>
+        <p class="w3-center w3-large">The creators of Kiku きく</p>
+        <div class="w3-row-padding w3-grayscale" style="margin-top:64px">
+            <div class="w3-col l3 m6 w3-margin-bottom">
+                <div class="w3-card">
+                    <img src=" " alt="Mauro" style="width:100%">
+                    <div class="w3-container">
+                        <h3>Mauro Chavez Vega</h3>
+                        <p class="w3-opacity">Backend</p>
+                        <p>Computer Science CLAS with a Japanese minor. <br> Class of 2025.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="w3-col l3 m6 w3-margin-bottom">
+                <div class="w3-card">
+                    <img src=" " alt="Mau" style="width:100%">
+                    <div class="w3-container">
+                        <h3>Mauricio Lara</h3>
+                        <p class="w3-opacity">Frontend</p>
+                        <p>Computer Science COE with an AI Specilization. <br> Class of 2025.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="w3-col l3 m6 w3-margin-bottom">
+                <div class="w3-card">
+                    <img src=" " alt="Sean" style="width:100%">
+                    <div class="w3-container">
+                        <h3>Sean Regan</h3>
+                        <p class="w3-opacity">Backend</p>
+                        <p>Computer Science COE with a Japanese minor. <br> Class of 2025.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="w3-col l3 m6 w3-margin-bottom">
+                <div class="w3-card">
+                    <img src=" " alt="Zack" style="width:100%">
+                    <div class="w3-container">
+                        <h3>Zackary Elmottalib</h3>
+                        <p class="w3-opacity">Frontend</p>
+                        <p>Computer Science CLAS with a Japanese minor. <br> Class of 2025.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson Section -->
+    <div class="w3-container" style="padding:64px 16px" id="lesson">
+        <h1 class="w3-center">Lessons Available</h1>
+        <p class="w3-center w3-large">What we've created for your learning experience!</p>
+
+        <div class="w3-row-padding w3-center" style="margin-top:64px">
+            <!-- Lessons Section -->
+            <section id="lessons">
+                <button onclick="window.location.href='KikuHome.html'" type="button" class="btn btn-lg"
+                    style="font-size: 24px; padding: 20px 40px; background-color: #ff5833; color: white; border: none; border-radius: 10px;">
+                    View all Available Lessons
+                </button>
+
+            </section>
+        </div>
+
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="w3-center w3-black w3-padding-64">
+        <p>Created by UF students for UF students.</a></p>
+    </footer>
+
+</body>
+
+</html>
