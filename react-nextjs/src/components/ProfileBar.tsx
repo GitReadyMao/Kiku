@@ -9,12 +9,13 @@ function ProfileBar() {
       <Container>
         <Navbar.Brand style={{ fontFamily: "'Tsukuhou Shogo Mincho', serif", fontSize: 45 }} href="dashboard">きく</Navbar.Brand>
         <Navbar.Toggle />
-
-
+        <Nav className="me-auto">
+          <Nav.Link href="/Leaderboards">Leaderboards</Nav.Link>
+        </Nav>
         <NavDropdown title="Username" id="navbarScrollingDropdown">
-          <NavDropdown.Item href="#Profile">Profile</NavDropdown.Item>
+          <NavDropdown.Item href="/Profile">Profile</NavDropdown.Item>
           <NavDropdown.Divider />
-          <NavDropdown.Item href="#Logout">
+          <NavDropdown.Item href="/">
             Logout
           </NavDropdown.Item>
         </NavDropdown>
