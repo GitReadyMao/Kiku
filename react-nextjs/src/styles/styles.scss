@@ -5,7 +5,7 @@ $success: #7952b3;
 body {
   padding: 1.5rem;
   background: rgb(189,217,155);
-  background: linear-gradient(139deg, rgba(189,217,155,1) 50%, rgba(255,183,197,1) 75%); 
+//  background: linear-gradient(139deg, rgba(189,217,155,1) 50%, rgba(255,183,197,1) 75%); 
 }
 center {
   position: relative;
@@ -20,8 +20,4 @@ center {
   src: local('Tsukuhou Shogo Mincho OFL 1.001'), url(../fonts/Tsukuhou_Shogo_Mincho_OFL_1.001/WORK/TsukuhouShogoMin-OFL.otf) format('opentype');
   font-weight: normal;
   font-style: normal;
-}
-.green {
-  background-color: rgb(189,217,155);
-  height: 100vh;
 }

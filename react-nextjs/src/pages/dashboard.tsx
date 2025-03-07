@@ -1,10 +1,16 @@
-const Dashboard = () => {
-    return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <h1>Welcome Back!</h1>
-        <p>聞きましょう!</p>
-      </div>
-    );
-  };
-  
-  export default Dashboard;
+import Head from "next/head";
+import Container from "react-bootstrap/Container";
+import AppGuides from "@/components/AppGuides";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import Homepage from "@/components/Homepage";
+import ProfileBar from "@/components/ProfileBar";
+
+export default function Home() {
+  return (
+    <>
+    <ProfileBar />
+    
+    </>
+  );
+}
