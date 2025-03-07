@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useRouter } from "next/router"; // Use Next.js router
 import Button from "react-bootstrap/Button";
 
-export interface ExampleOffcanvasProps {
+export interface Registration {
   className?: string | undefined;
 }
 
-const registrationButton: React.FC<ExampleOffcanvasProps> = ({ className }) => {
+const registrationButton: React.FC<Registration> = ({ className }) => {
   const [error, setError] = useState("");
   const router = useRouter(); // Router used by Next.js, not react
 

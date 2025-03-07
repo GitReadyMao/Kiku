@@ -1,8 +1,8 @@
 import Col from "react-bootstrap/Col";
-import ExamplePopover from "@/components/ExamplePopover";
-import ExampleOffcanvas from "./ExampleOffcanvas";
+import Registration from "@/components/Registration";
+import Login from "./Login";
 
-const ExampleComponents: React.FC = () => {
+const Homepage: React.FC = () => {
   return (
     <>
       <Col lg={8} className="px-0">
@@ -15,10 +15,10 @@ const ExampleComponents: React.FC = () => {
         </p>
       </Col>
 
-      <ExampleOffcanvas className="me-3" />
-      <ExamplePopover />
+      <Login className="me-3" />
+      <Registration />
     </>
   );
 };
 
-export default ExampleComponents;
+export default Homepage;

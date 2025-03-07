@@ -3,7 +3,7 @@ import Container from "react-bootstrap/Container";
 import AppGuides from "@/components/AppGuides";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import ExampleComponents from "@/components/ExampleComponents";
+import Homepage from "@/components/Homepage";
 
 export default function Home() {
   return (
@@ -19,7 +19,7 @@ export default function Home() {
 
         <h1>Kiku</h1>
 
-        <ExampleComponents />
+        <Homepage />
 
         <hr className="col-1 my-5 mx-0" />
 
