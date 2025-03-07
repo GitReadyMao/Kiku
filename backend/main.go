@@ -248,7 +248,7 @@ func deleteUser(c *gin.Context) {
 		return
 	}
 
-	db.Delete(&user)
+	db.Delete(&user, "username = ?", username)
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 

@@ -20,7 +20,7 @@ func Authorize(c *gin.Context) error {
 		//log.Println("Authorize error: No such user")
 		return errors.New("error: No such user")
 	}
-	//log.Println("Authorize: found user =", member.Username)
+	//log.Println("Authorize: found user =", user.Username)
 
 	// Check session token
 	st, err := c.Cookie("session_token")
@@ -35,7 +35,8 @@ func Authorize(c *gin.Context) error {
 	}
 
 	// Check the CSRF token from the headers
-	csrf := c.Request.Header.Get("X-CSRF-Token")
+	//csrf := c.Request.Header.Get("X-CSRF-Token")
+	csrf, _ := c.Cookie("csrf_token")
 	if csrf != user.CSRFToken || csrf == "" {
 		//log.Println("Authorize error: Invalid csrf token")
 		return authError
