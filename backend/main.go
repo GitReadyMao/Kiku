@@ -51,10 +51,10 @@ func main() {
 		v1.GET("user", getUsers)
 		v1.GET("user/:username", getUserByUsername)
 		v1.POST("register", register)
-		v1.PUT("user/:username", updateUser)
-		v1.DELETE("user/:username", deleteUser)
+		v1.PUT("user", updateUser)
+		v1.DELETE("user", deleteUser)
 		v1.POST("login", login)
-		v1.POST("logout/:username", logout)
+		v1.POST("logout", logout)
 		v1.OPTIONS("user", options)
 	}
 
@@ -177,7 +177,7 @@ func logout(c *gin.Context) {
 	c.SetCookie("session_token", "", -1, "/", "localhost", false, true)
 	c.SetCookie("csrf_token", "", -1, "/", "localhost", false, false)
 
-	username := c.Param("username")
+	username := getUsername(c)
 
 	var user models.User
 
@@ -202,7 +202,7 @@ func updateUser(c *gin.Context) {
 		return
 	}
 
-	username := c.Param("username")
+	username := getUsername(c)
 
 	var user models.User
 
@@ -239,7 +239,7 @@ func deleteUser(c *gin.Context) {
 		return
 	}
 
-	username := c.Param("username")
+	username := getUsername(c)
 
 	var user models.User
 
