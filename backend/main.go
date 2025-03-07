@@ -16,7 +16,7 @@ var db *gorm.DB
 
 func connectDatabase() error {
 	var err error
-	db, err = gorm.Open(sqlite.Open("local.db"), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open("kiku.db"), &gorm.Config{})
 	if err != nil {
 		panic("Error connecting/creating the sqlite db")
 	}
