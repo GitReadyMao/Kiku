@@ -9,7 +9,7 @@ const Homepage: React.FC = () => {
           <a href="https://www.youtube.com/watch?v=iIu9YHWZUzE&list=LL">Learn more</a>
         </p>
         <p>
-          Don't wait, get started now!
+          Don't wait, get started today!
         </p>
       </Col>
     </>
