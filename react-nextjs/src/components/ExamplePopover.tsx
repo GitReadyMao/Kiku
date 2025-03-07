@@ -1,22 +1,28 @@
-import Anchor from "react-bootstrap/Anchor";
-import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import Popover from "react-bootstrap/Popover";
+import { useState } from "react";
+import { useRouter } from "next/router"; // Use Next.js router
+import Button from "react-bootstrap/Button";
 
-const ExamplePopover: React.FC = () => {
+export interface ExampleOffcanvasProps {
+  className?: string | undefined;
+}
+
+const registrationButton: React.FC<ExampleOffcanvasProps> = ({ className }) => {
+  const [error, setError] = useState("");
+  const router = useRouter(); // Router used by Next.js, not react
+
+  const registrationPage = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    router.push("/register")
+  };
+
   return (
-    <OverlayTrigger
-      trigger="click"
-      placement="right"
-      overlay={
-        <Popover>
-          <Popover.Header as="h3">Custom popover</Popover.Header>
-          <Popover.Body>This is a Bootstrap popover.</Popover.Body>
-        </Popover>
-      }
-    >
-      <Anchor className="text-success">Register now</Anchor>
-    </OverlayTrigger>
+      <Button variant="secondary" onClick={registrationPage}>
+        Register
+      </Button>
   );
+  
 };
 
-export default ExamplePopover;
+export default registrationButton;

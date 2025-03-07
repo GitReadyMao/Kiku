@@ -13,7 +13,7 @@ const ExampleOffcanvas: React.FC<ExampleOffcanvasProps> = ({ className }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter(); // Router used by Next.js, not reacct
+  const router = useRouter(); // Router used by Next.js, not react
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
