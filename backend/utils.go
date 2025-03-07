@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gshare.com/platform/models"
 )
 
 func hashPassword(password string) (string, error) {
@@ -24,4 +26,18 @@ func generateToken(length int) string {
 		log.Fatalf("Failed to generate token: %v", err)
 	}
 	return base64.URLEncoding.EncodeToString(bytes)
+}
+
+func getUsername(c *gin.Context) string {
+	st, err := c.Cookie("session_token")
+	if err != nil || st == "" {
+		return ""
+	}
+
+	var user models.User
+	if db.First(&user, "session_token = ?", st).Error != nil {
+		return ""
+	}
+
+	return user.Username
 }
