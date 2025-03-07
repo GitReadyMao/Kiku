@@ -136,7 +136,7 @@ func login(c *gin.Context) {
 
 	var loginInfo models.User
 
-	//Bind the username and password into the member struct
+	//Bind the username and password into the user struct
 	if err := c.ShouldBindJSON(&loginInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
