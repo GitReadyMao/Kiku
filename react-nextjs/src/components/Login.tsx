@@ -4,11 +4,11 @@ import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
 
-export interface ExampleOffcanvasProps {
+export interface Login {
   className?: string | undefined;
 }
 
-const ExampleOffcanvas: React.FC<ExampleOffcanvasProps> = ({ className }) => {
+const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
   const [show, setShow] = useState(false); //For displaying the offcanvas
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

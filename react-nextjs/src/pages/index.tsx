@@ -3,14 +3,14 @@ import Container from "react-bootstrap/Container";
 import AppGuides from "@/components/AppGuides";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import ExampleComponents from "@/components/ExampleComponents";
+import Homepage from "@/components/Homepage";
 
 export default function Home() {
   return (
     <>
       <Head>
         <title>きく</title>
-        <meta name="description" content="上げ your 聞く today!" />
+        <meta name="description" content="Listen up!" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/android-chrome-192x192.png" />
       </Head>
@@ -19,7 +19,7 @@ export default function Home() {
 
         <h1>Kiku</h1>
 
-        <ExampleComponents />
+        <Homepage />
 
         <hr className="col-1 my-5 mx-0" />
 

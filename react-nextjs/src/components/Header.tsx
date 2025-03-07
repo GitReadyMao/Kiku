@@ -1,25 +1,25 @@
-import Link from "next/link";
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+import RegistrationButton from './Registration';
+import Login from './Login';
 
-const Header: React.FC = () => {
+
+function ProfileBar() {
   return (
-    <header className="d-flex justify-content-between align-items-md-center pb-3 mb-5 border-bottom">
-      <h1 className="h4">
-        <Link
-          href="/"
-          className="d-flex align-items-center text-dark text-decoration-none"
-        >
-        <span style={{ fontFamily: "'Tsukuhou Shogo Mincho', serif", fontSize: 45 }}>きく</span>
-        </Link>
-      </h1>
-      <a
-        href="https://github.com/GitReadyMao/Kiku/"
-        target="_blank"
-        rel="noopener"
-      >
-        Visit us on GitHub!
-      </a>
-    </header>
-  );
-};
+    <Navbar style={{ backgroundColor: '#ffb7c5' }} fixed="top">
+      <Container>
+        <Navbar.Brand href=" ">きく</Navbar.Brand>
+        <Navbar.Toggle />
+        <Nav className="ms-auto">
 
-export default Header;
+          <RegistrationButton />
+          <Login />
+        </Nav>
+
+      </Container>
+    </Navbar>
+  );
+}
+export default ProfileBar;
