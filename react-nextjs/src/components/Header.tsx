@@ -10,7 +10,7 @@ function ProfileBar() {
   return (
     <Navbar style={{ backgroundColor: '#ffb7c5' }} fixed="top">
       <Container>
-        <Navbar.Brand href=" ">きく</Navbar.Brand>
+        <Navbar.Brand style={{ fontFamily: "'Tsukuhou Shogo Mincho', serif", fontSize: 45 }} href=" ">きく</Navbar.Brand>
         <Navbar.Toggle />
         <Nav className="ms-auto">
 

@@ -7,16 +7,16 @@ function ProfileBar() {
   return (
     <Navbar style={{ backgroundColor: '#ffb7c5' }} fixed="top">
       <Container>
-        <Navbar.Brand href="dashboard">きく</Navbar.Brand>
+        <Navbar.Brand style={{ fontFamily: "'Tsukuhou Shogo Mincho', serif", fontSize: 45 }} href="dashboard">きく</Navbar.Brand>
         <Navbar.Toggle />
-        
-        
+
+
         <NavDropdown title="Username" id="navbarScrollingDropdown">
-              <NavDropdown.Item href="#Profile">Profile</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#Logout">
-                Logout
-              </NavDropdown.Item>
+          <NavDropdown.Item href="#Profile">Profile</NavDropdown.Item>
+          <NavDropdown.Divider />
+          <NavDropdown.Item href="#Logout">
+            Logout
+          </NavDropdown.Item>
         </NavDropdown>
       </Container>
     </Navbar>
