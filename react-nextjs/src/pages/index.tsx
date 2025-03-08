@@ -17,10 +17,8 @@ export default function Home() {
       <Container as="main" className="py-4 px-3 mx-auto">
         <Header />
 
-        <h1>Kiku</h1>
-
         <Homepage />
-
+        
         <hr className="col-1 my-5 mx-0" />
 
         <AppGuides />
