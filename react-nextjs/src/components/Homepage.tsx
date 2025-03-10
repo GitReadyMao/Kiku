@@ -20,26 +20,7 @@ const Homepage: React.FC = () => {
 
       <br></br>
 
-      <div className="text-center mt-4">
-        <p className="fs-3">
-          上げ your きく!{" "}
-          <a href="https://www.youtube.com/watch?v=iIu9YHWZUzE&list=LL">Learn more</a>
-        </p>
-        <p className="fs-3">
-          Don't wait, get started now!
-        </p>
-
-        <div className="me-3 btn btn-primary btn-lg">
-          <Login />
-
-        </div>
-        <div className="me-3 btn btn-secondary btn-lg">
-
-          <Registration />
-
-        </div>
-
-      </div>
+      
 
       {/* About section */}
       <div className="text-center mt-4">
@@ -83,7 +64,7 @@ const Homepage: React.FC = () => {
 
       <hr className="col-auto my-5 mx-0" style={{ color: 'white' }} />
 
-
+      {/*Meet the team */}
       <div className="text-center mt-4" style={{ padding: '64px 16px 20px' }} id="team">
         <h3>Senior Citizens</h3>
         <p style={{ fontSize: "20px"}}>The creators of Kiku きく</p>
@@ -134,7 +115,8 @@ const Homepage: React.FC = () => {
           </div>
         </div>
       </div>
-
+      
+      {/*Lessons Button*/}
       <div className="text-center mt-4" style={{ padding: "64px 16px" }} id="lesson">
         <h1>Lessons Available</h1>
         <p style={{ fontSize: "20px"}}>What we've created for your learning experience!</p>

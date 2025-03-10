@@ -1,7 +1,7 @@
 const Footer: React.FC = () => {
   return (
     <footer>
-      <hr className="mt-5 mb-4" />
+      <hr/>
       <p className="text-muted">
         Created and open sourced by the Bootstrap team. Licensed MIT.
       </p>
