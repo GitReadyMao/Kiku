@@ -61,6 +61,11 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+
+            <p className="mt-3">
+              <a href="/ForgotPassword">Forgot password?</a>
+            </p>
+
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicCheckbox">
               <Form.Check type="checkbox" label="Keep me logged in" />
