@@ -9,8 +9,8 @@ export default function Profile() {
 
   return (
     <>
+    <br />
       <ProfileBar />
-      <br />
       <h1>Welcome in, {username}!</h1>
       <p>
         These are crucial settings for your account and anything deleted will be

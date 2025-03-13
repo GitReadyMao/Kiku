@@ -21,7 +21,7 @@ function Registration() {
       
       <Form.Group className="mb-3" controlId="formBasicPassword">
         <Form.Label>Re-enter password</Form.Label>
-        <Form.Control type="password" placeholder="Password" />
+        <Form.Control type="password" placeholder="Re-Enter Password" />
       </Form.Group>
       <Button variant="primary" type="submit">
         Register

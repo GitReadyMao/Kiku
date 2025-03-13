@@ -3,6 +3,8 @@ import LessonOverview from "../components/Dashboard";
 
 export default function Home() {
   return (
+    <>
+    <br />
     <div>
       <header className="text-center bg-green-200 py-10">
         <h1 className="text-4xl font-bold">Welcome to Lesson Overview</h1>
@@ -14,6 +16,6 @@ export default function Home() {
       </header>
       <ProfileBar />
       <LessonOverview />
-    </div>
+    </div></>
   );
 }
