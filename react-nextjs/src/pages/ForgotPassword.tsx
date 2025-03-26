@@ -1,12 +1,12 @@
 import ForgotPasswordForm from "@/components/ForgotPasswordForm";
-import ProfileBar from "@/components/Header";
+import ProfileBar from "@/components/ProfileBar";
 
 export default function ForgotPasswordPage() {
   return (
     <div className="container">
       <br />
-      <ForgotPasswordForm />
       <ProfileBar />
+      <ForgotPasswordForm />
     </div>
   );
 }
