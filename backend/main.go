@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,9 @@ func main() {
 		v1.POST("login", login)
 		v1.POST("logout", logout)
 		v1.OPTIONS("user", options)
+
+		// term routes
+		v1.GET("nextterm", getNextTerm)
 	}
 
 	// By default it serves on :8080 unless a
@@ -65,18 +69,52 @@ func main() {
 
 func getUsers(c *gin.Context) {
 
+	type UserQuery struct {
+		Column    string `json:"column"`
+		Order     string `json:"order"`
+		Limit     int    `json:"limit"`
+		Offset    int    `json:"offset"`
+		SearchKey string `json:"search_key"`
+	}
+
+	//Start by reading in the sorting column and direction
+	var userQuery UserQuery
+	if err := c.ShouldBindJSON(&userQuery); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	//If no limit or offset was passed in, set to -1 for the SQL command
+	if userQuery.Limit == 0 {
+		userQuery.Limit = -1
+	}
+	if userQuery.Offset == 0 {
+		userQuery.Offset = -1
+	}
+
+	//Format the order for sorting
+	var order string
+	if userQuery.Order != "" {
+		order = userQuery.Column + " " + userQuery.Order
+	} else {
+		order = userQuery.Column
+	}
+
 	var users []models.User
 
-	result := db.Limit(10).Find(&users)
+	// Fetch posts ordered by the passed in column, with slices specified
+	result := db.Where("username LIKE ?", "%"+userQuery.SearchKey+"%").Or("email LIKE ?", "%"+userQuery.SearchKey+"%").Order(order).Limit(userQuery.Limit).Offset(userQuery.Offset).Find(&users)
 
-	checkErr(result.Error)
-
-	if users == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No Records Found"})
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Error()})
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"data": users})
 	}
+
+	//Get the count
+	var count int64
+	db.Model(&models.User{}).Where("username LIKE ?", "%"+userQuery.SearchKey+"%").Or("email LIKE ?", "%"+userQuery.SearchKey+"%").Count(&count)
+
+	c.JSON(http.StatusOK, gin.H{"count": count, "data": users})
 }
 
 func getUserByUsername(c *gin.Context) {
@@ -255,5 +293,20 @@ func deleteUser(c *gin.Context) {
 func options(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "options Called"})
+
+}
+
+func getNextTerm(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	type NextTerm struct {
+		Date time.Time
+		Id   int
+	}
 
 }
