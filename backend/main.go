@@ -80,7 +80,7 @@ func getUsers(c *gin.Context) {
 
 	//Start by reading in the sorting column and direction
 	var userQuery UserQuery
-	if err := c.ShouldBindJSON(&userQuery); err != nil {
+	if err := c.ShouldBindQuery(&userQuery); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
