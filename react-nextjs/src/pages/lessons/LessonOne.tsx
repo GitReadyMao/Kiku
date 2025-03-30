@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import ProfileBar from "@/components/Header";
+import ProfileBar from "@/components/ProfileBar";
+import Button from "react-bootstrap/esm/Button";
 
 export default function LessonOne() {
   return (
     <>
     <br />
-    <ProfileBar />
+    <ProfileBar/>
     <div className="w-full min-h-screen bg-gray-100">
 
       <header className="w-full text-center py-6" style={{ backgroundColor: "#bdd99b" }}>
@@ -60,14 +61,17 @@ export default function LessonOne() {
         </p>
 
         <div className="text-center mt-8">
-          <button          >
-            Practice Lesson 1
-          </button>
+          
+        <Link href="LessonOnePractice/">
+          <Button>
+            Practice  
+          </Button>
+        </Link>
         </div>
 
         <div className="text-center mt-4">
           
-          <Link href="/lessons">
+          <Link href="/dashboard">
             <button className="px-4 py-2 text-lg text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-all">
               Back to Lessons
             </button>

@@ -6,7 +6,7 @@ import RegistrationButton from './Registration';
 import Login from './Login';
 
 
-function ProfileBar() {
+function LoginBar() {
   return (
     <Navbar style={{ backgroundColor: '#ffb7c5' }} fixed="top">
       <Container>
@@ -22,4 +22,4 @@ function ProfileBar() {
     </Navbar>
   );
 }
-export default ProfileBar;
+export default LoginBar;

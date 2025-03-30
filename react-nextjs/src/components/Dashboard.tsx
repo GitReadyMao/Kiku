@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import Button from "react-bootstrap/esm/Button";
 
 const LessonOverview = () => {
     return (
@@ -43,14 +45,13 @@ const LessonOverview = () => {
                             Here's the graduate.
                             We're very proud of you, son.
                         </p>
-            
-                        <button
-                            style={{ color: "#ffb7c5" }}
-                            className="px-6 bg-white rounded-full hover:ring-1 hover:text-white hover:bg-inherit py-2 hover:ring-white transition-all"
-                        >
-                            Lesson {index + 1}
-                        </button>
-
+                        
+                        <Link href="lessons/LessonOne/">
+                            <Button style={{ color: "#ffb7c5" }}
+                                className="px-6 bg-white rounded-full hover:ring-1 hover:text-white hover:bg-inherit py-2 hover:ring-white transition-all">
+                                Lesson {index + 1}
+                            </Button>
+                        </Link>
                     </section>
                 ))}
             </div>
