@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -40,4 +41,8 @@ func getUsername(c *gin.Context) string {
 	}
 
 	return user.Username
+}
+
+func getSRSTime(level int) time.Time {
+	return time.Now().Add(time.Minute * time.Duration(level*6))
 }

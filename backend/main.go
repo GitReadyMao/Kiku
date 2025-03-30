@@ -60,6 +60,7 @@ func main() {
 
 		// term routes
 		v1.GET("nextterm", getNextTerm)
+		v1.POST("studyterm", studyTerm)
 	}
 
 	// By default it serves on :8080 unless a
@@ -304,9 +305,48 @@ func getNextTerm(c *gin.Context) {
 		return
 	}
 
-	type NextTerm struct {
-		Date time.Time
-		Id   int
+	var nextTerm models.Studies
+
+	if err := db.Where("username = ?", getUsername(c)).Where("study_time < ?", time.Now()).Where("study_time = (?)", db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
+		return
 	}
 
+	c.JSON(http.StatusOK, gin.H{"data": nextTerm})
+}
+
+func studyTerm(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	type StudyQuery struct {
+		TermId   int
+		LevelMod int
+	}
+
+	//Start by reading in the term id and correctness
+	var studyQuery StudyQuery
+	if err := c.ShouldBindJSON(&studyQuery); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	//Get the current level
+	var level int
+	if err := db.Select("level").Where("username = ?", getUsername(c)).Where("term_id = ?", studyQuery.TermId).First(&level); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No such term"})
+		return
+	}
+
+	//Update the level
+	if err := db.Where("username = ?", getUsername(c)).Where("term_id = ?", studyQuery.TermId).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No such term"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Term Studied"})
 }
