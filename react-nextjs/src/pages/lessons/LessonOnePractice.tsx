@@ -7,12 +7,23 @@ import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 
 export default function LessonOne() {
-    const [question] = useState(questionBank[0]); 
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const question = questionBank[currentQuestionIndex]; 
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+    
 
     const handleAnswerClick = (answer: string) => {
         setSelectedAnswer(answer);
     };
+    const handleNextQuestion = () => {
+        if (currentQuestionIndex < questionBank.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+            setSelectedAnswer(null); // Reset selection for the new question
+        }
+        else{
+            //Show results screen
+        }
+    }
 
     return (
         <>
@@ -56,7 +67,11 @@ export default function LessonOne() {
                     );
                 })}
             </Row>
-
+            <div className="mt-3">
+                <Button variant="secondary" onClick={handleNextQuestion} disabled={!selectedAnswer}>
+                    Next Question
+                </Button>
+            </div>
         </>
     );
 }

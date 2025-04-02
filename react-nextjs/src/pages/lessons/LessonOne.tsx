@@ -50,7 +50,7 @@ export default function LessonOne() {
           </p>
         </div>
 
-        <h2 className="text-2xl font-bold mt-6">Amogus</h2>
+        <h2 className="text-2xl font-bold mt-6">Usages</h2>
         <p className="mt-2">
           Hiragana and katakana are two different ways to write the same set of **46 sounds**. They’re the closest
           the Japanese language has to an alphabet.
