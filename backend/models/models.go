@@ -25,3 +25,22 @@ type Studies struct {
 	Level     int       `json:"level"`
 	StudyTime time.Time `json:"study_time"`
 }
+
+type Group struct {
+	Name        string `json:"name"`
+	MemberCount int    `json:"member_count"`
+}
+
+type PartOf struct {
+	Username  string `json:"username"`
+	GroupName string `json:"group_name"`
+}
+
+type Tabler interface {
+	TableName() string
+}
+
+// TableName overrides the table name used by User to `profiles`
+func (PartOf) TableName() string {
+	return "PartOf"
+}
