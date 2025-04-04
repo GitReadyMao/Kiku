@@ -1,62 +1,59 @@
-import Image from "next/image";
+import Image from 'react-bootstrap/Image';
 import Link from "next/link";
-import Button from "react-bootstrap/esm/Button";
 
 const LessonOverview = () => {
+
+    const lessonLinks = ["/lessons/LessonOne", "/lessons/LessonTwo", "/lessons/LessonThree"];
+
     return (
-        <div className="min-h-screen w-full flex items-center justify-center p-10">
-            <div className="flex flex-row gap-8">
-                {["Hiragana and Katakana", "Kanji Mastery", "Japanese Grammar"].map((title, index) => (
-                    <section
-                        key={index}
-                        style={{ background: "#ffb7c5" }}
-                        className="w-[260px] py-8 px-10 text-center rounded-lg shadow-lg"
-                    >
-                        <h2 className="uppercase font-bold text-3xl mb-4">{title}</h2>
+        <div className="text-center mt-4" id="lessons">
+            <p style={{ fontSize: "20px" }}>Explore key aspects of the Japanese language</p>
 
-                        {/* Image */}
-                        <Image
-                            src="/Kikuflower.png"
-                            alt="Lesson Image"
-                            width={200}
-                            height={150}
-                            className="mx-auto mb-4 rounded-lg"
-                        />
+            <div className="row" style={{ marginTop: '64px' }}>
+                {[
+                    { title: "Hiragana and Katakana", description: "According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. The bee, of course, flies anyway because bees don't care what humans think is impossible.", img: "/Kikuflower.png" },
+                    { title: "Kanji Mastery", description: "According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. The bee, of course, flies anyway because bees don't care what humans think is impossible.", img: "/Kikuflower.png" },
+                    { title: "Japanese Grammar", description: "According to all known laws of aviation, there is no way a bee should be able to fly. Its wings are too small to get its fat little body off the ground. The bee, of course, flies anyway because bees don't care what humans think is impossible.", img: "/Kikuflower.png" }
+                ].map((lesson, index) => (
+                    <div key={index} className="col-md-4 col-sm-6 mb-4">
+                        <div className="card" style={{ border: '1px solid #ddd', borderRadius: '10px' }}>
+                            <div className="card-body">
+                                <h3 className="card-title">{lesson.title}</h3>
 
-                        <p className="text-sm leading-relaxed mb-6">
-                            Learn the fundamentals of {title.toUpperCase()} in this lesson. According to all known laws of aviation, there is no way a bee should be able to fly.
-                            Its wings are too small to get its fat little body off the ground.
-                            The bee, of course, flies anyway because bees don't care what humans think is impossible.
-                            Yellow, black. Yellow, black. Yellow, black. Yellow, black.
-                            Ooh, black and yellow!
-                            Let's shake it up a little.
-                            Barry! Breakfast is ready!
-                            Coming!
-                            Hang on a second.
-                            Hello?
-                            Barry?
-                            Adam?
-                            Can you believe this is happening?
-                            I can't.
-                            I'll pick you up.
-                            Looking sharp.
-                            Use the stairs, Your father paid good money for those.
-                            Sorry. I'm excited.
-                            Here's the graduate.
-                            We're very proud of you, son.
-                        </p>
-                        
-                        <Link href="lessons/LessonOne/">
-                            <Button style={{ color: "#ffb7c5" }}
-                                className="px-6 bg-white rounded-full hover:ring-1 hover:text-white hover:bg-inherit py-2 hover:ring-white transition-all">
-                                Lesson {index + 1}
-                            </Button>
-                        </Link>
-                    </section>
+                                <Image
+                                    src={lesson.img}
+                                    alt={lesson.title}
+                                    width={200}
+                                    height={150}
+                                    fluid
+                                    className="rounded-lg my-3"
+                                />
+
+                                <p className="card-text">{lesson.description}</p>
+
+
+                                <Link href={lessonLinks[index]}>
+                                    <button className="btn btn-lg"
+                                        style={{
+                                            fontSize: '24px',
+                                            padding: '20px 40px',
+                                            backgroundColor: '#ff5833',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '10px'
+                                        }}
+                                    >
+                                        Start Lesson {index + 1}
+                                    </button>
+
+                                </Link>
+                            </div>
+
+                        </div>
+                    </div>
                 ))}
             </div>
         </div>
-
     );
 };
 
