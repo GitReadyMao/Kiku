@@ -3,28 +3,51 @@ import { useRouter } from "next/router"; // Use Next.js router
 import Button from "react-bootstrap/Button";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
+import axios from "axios";
 
 export interface Login {
   className?: string | undefined;
 }
 
 const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
+  //apiURL for demonstration purposes, move to env?
+  const apiURL = "http://localhost:8080";
+
   const [show, setShow] = useState(false); //For displaying the offcanvas
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter(); // Router used by Next.js, not react
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Simulated authentication check
-    if (email === "123@123.com" && password === "123") {
-      router.push("/dashboard");
-    } else {
-      setError("Invalid email or password");
+    //raw fetch for demonstration purposes, probably should use package instead
+    const body = {
+      username: username,
+      password: password
     }
+    await axios.post(`${apiURL}/api/v1/login`, body)
+      .then(() => {
+        router.push("/dashboard");
+      })
+      .catch(error => {
+        alert("login failed");
+      })
+    // const response = await fetch(`${apiURL}/api/v1/login`, {
+    //   method: 'POST',
+    //   headers: {"Content-Type": "application/json"},
+    //   body: JSON.stringify({username, password})
+    // }).then(() => {
+    //   router.push("/dashboard");
+    // })
+    // Simulated authentication check
+    // if (email === "123@123.com" && password === "123") {
+    //   router.push("/dashboard");
+    // } else {
+    //   setError("Invalid email or password");
+    // }
   };
 
   return (
@@ -38,17 +61,17 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Form onSubmit={handleLogin}>    {/* This form handles getting the entered email and password and passing it into handleLogin*/}
-            <Form.Group className="mb-3" controlId="loginEmail">
-              <Form.Label>Email address</Form.Label>
+            <Form.Group className="mb-3" controlId="userName">
+              <Form.Label>User Name</Form.Label>
               <Form.Control
-                type="email"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="username"
+                placeholder="Enter Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
               <Form.Text className="text-muted">
-                We'll never share your email with anyone else.
+                We'll never share your username with anyone else.
               </Form.Text>
             </Form.Group>
 
