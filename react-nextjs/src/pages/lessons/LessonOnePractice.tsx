@@ -5,6 +5,8 @@ import questionBank from "./LessonOneQuestions";
 import React, { useState } from "react";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
+import useSound from 'use-sound';
+import mySound from '../../../public/mp3/omae.mp3';
 
 export default function LessonOne() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //Updates what question you're currently on
@@ -12,6 +14,7 @@ export default function LessonOne() {
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null); //used for handling checking answers atm
     const [correctAnswersCount, setCorrectAnswersCount] = useState(0); // keeps track of # of correct questions (TODO: add scoring/SRS components to this)
     const [showResults, setShowResults] = useState(false);
+    const [playSound] = useSound(mySound, { volume: 1.25 })
 
     const handleAnswerClick = (answer: string) => {
         setSelectedAnswer(answer);
@@ -33,7 +36,7 @@ export default function LessonOne() {
         <>
             <br />
             <ProfileBar />
-            
+
             {showResults ? ( //handles displaying results 
                 <div className="text-center">
                     <h2 className="mt-3">Quiz completed!</h2>
@@ -47,7 +50,7 @@ export default function LessonOne() {
                     <h2 className="text-center">Which sound do you hear?</h2>
 
                     <div className="text-center">
-                        <Button>
+                        <Button onClick={() => playSound()}>
                             <FaVolumeUp size="xl" />
                             <span className="ms-1">Click here to listen</span>
                         </Button>
