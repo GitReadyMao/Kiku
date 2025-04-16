@@ -122,6 +122,7 @@ const Homepage: React.FC = () => {
         <p style={{ fontSize: "20px"}}>What we've created for your learning experience!</p>
 
         <div className="text-center mt-4" style={{ margin: "64px" }}>
+          <a href="/dashboard">
             <button className="btn btn-lg"
               style={{
                 fontSize: '24px',
@@ -134,7 +135,7 @@ const Homepage: React.FC = () => {
             >
               View all Available Lessons
             </button>
-
+            </a>
         </div>
 
 
