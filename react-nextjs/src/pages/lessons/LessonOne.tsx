@@ -93,16 +93,19 @@ export default function LessonOne() {
         <div className="w3-center w3-margin-top">
           <Link href="LessonOnePractice">
             <button
-              type="button"
-              className="w3-button w3-xlarge w3-round-large"
+              className="btn "
               style={{
-                backgroundColor: "#ffb7c5",
-                color: "white",
-                padding: "15px 30px"
+                fontSize: 'clamp(14px, 4vw, 25px)', 
+                padding: '10px 20px',              
+                backgroundColor: '#ff5833',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px'
               }}
             >
-              Go to Lesson One Practice
+             Go to Lesson One Practice
             </button>
+
           </Link>
 
         </div>

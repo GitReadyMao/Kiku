@@ -2,14 +2,16 @@ import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import ListGroup from "react-bootstrap/ListGroup";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 const GroupManagement: React.FC = () => {
-  const [groups, setGroups] = useState<string[]>(["TEAM ALLMIGHT"]); 
+  const [groups, setGroups] = useState<string[]>(["TEAM ALLMIGHT"]);
   const [groupName, setGroupName] = useState("");
   const [userGroup, setUserGroup] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Creating of new group
   const handleCreateGroup = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -34,90 +36,79 @@ const GroupManagement: React.FC = () => {
       return;
     }
 
-    setUserGroup(group); // switch between groups
+    setUserGroup(group);
   };
 
   const handleLeaveGroup = () => {
     setUserGroup(null);
   };
 
-  const handleDeleteUser = () => {
-    
-  }
-  
-  {/*const handleDeleteGroup = (group: string) => {
-    setGroups(groups.filter((g) => g !== group));
-  };
-    <Button variant="danger" size="sm" onClick={() => handleDeleteGroup(group)}>
-                  Delete
-                </Button> */}
-  
-
   return (
-    <div>
-      <h2>Manage Groups</h2>
+    <Container className="mt-5">
+      <Row className="justify-content-center">
+        <Col xs={12} sm={12} md={8} lg={6}>
+          <div className="p-4 border rounded shadow bg-light">
 
-      <Form onSubmit={handleCreateGroup}>
-        <Form.Group className="mb-3" controlId="groupName">
-          <Form.Label>Group Name</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter group name"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-          />
-        </Form.Group>
+            <h2 className="text-center mb-4">Manage Groups</h2>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+            <Form onSubmit={handleCreateGroup}>
+              <Form.Group className="mb-3" controlId="groupName">
+                <Form.Label>Group Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter group name"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                />
+              </Form.Group>
 
-        <Button variant="success" type="submit">
-          Create Group
-        </Button>
-        
-      </Form>
+              {error && <p className="text-danger fw-bold">{error}</p>}
 
-      <hr />
+              <div className="d-grid">
+                <Button variant="success" type="submit">
+                  Create Group
+                </Button>
+              </div>
+            </Form>
 
-      
-      <h3>Your Current Group:</h3>
-      {userGroup ? (
-        <div>
-          <p><strong>{userGroup}</strong></p>
-          <Button variant="danger" onClick={handleLeaveGroup}>Leave Group</Button>
-        </div>
-      ) : (
-        <p>You are not in any group.</p>
-      )}
+            <hr />
 
-      <hr />
+            <h3 className="text-center">Your Current Group</h3>
+            {userGroup ? (
+              <div className="text-center mb-3">
+                <p><strong>{userGroup}</strong></p>
+                <Button variant="danger" onClick={handleLeaveGroup}>Leave Group</Button>
+              </div>
+            ) : (
+              <p className="text-center">You are not in any group.</p>
+            )}
 
+            <hr />
 
-      <h3>Available Groups</h3>
-      {groups.length === 0 ? (
-        <p>No groups available.</p>
-      ) : (
-        <ListGroup>
-          {groups.map((group, index) => (
-            <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center">
-              {group}
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleJoinGroup(group)}
-                disabled={userGroup === group} 
-              >
-                
-                {userGroup === group ? "Joined" : "Join"}
-              </Button>
-              
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      )}
-
-      <h3>Delete Account</h3>
-
-    </div>
+            <h3 className="text-center">Available Groups</h3>
+            {groups.length === 0 ? (
+              <p className="text-center">No groups available.</p>
+            ) : (
+              <ListGroup>
+                {groups.map((group, index) => (
+                  <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center">
+                    {group}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleJoinGroup(group)}
+                      disabled={userGroup === group}
+                    >
+                      {userGroup === group ? "Joined" : "Join"}
+                    </Button>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            )}
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

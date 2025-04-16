@@ -33,7 +33,7 @@ export default function LessonOne() {
         <>
             <br />
             <ProfileBar />
-            
+
             {showResults ? ( //handles displaying results 
                 <div className="text-center">
                     <h2 className="mt-3">Quiz completed!</h2>
@@ -46,12 +46,16 @@ export default function LessonOne() {
                 <div>
                     <h2 className="text-center">Which sound do you hear?</h2>
 
+                    <br></br>
+
                     <div className="text-center">
                         <Button>
-                            <FaVolumeUp size="xl" />
-                            <span className="ms-1">Click here to listen</span>
+                            <FaVolumeUp style={{ fontSize: '6vw' }} />
+                            <span className="ms-1"> Click here to listen</span>
                         </Button>
                     </div>
+
+                    <br></br>
 
                     <Row className="justify-content-center">
                         {question.answers.map((answer, index) => {
@@ -66,12 +70,21 @@ export default function LessonOne() {
                             }
 
                             return (
-                                <Col xs={6} className="mb-2" key={index}>
+                                <Col
+                                    key={index}
+                                    xs={6} md={5} lg={5}
+                                    className="d-flex justify-content-center mb-3"
+                                >
                                     <Button
-                                        className="d-grid gap-2 col-12 btn-lg mx-auto"
+                                        size="lg"
+                                        className={`w-100 fw-bold fs-4 ${answer === question.correctAnswer && selectedAnswer ? 'custom-bright-green' : ''}`}
                                         variant={variant}
                                         onClick={() => handleAnswerClick(answer)}
-                                        disabled={selectedAnswer !== null} // Disable buttons after selection
+                                        disabled={selectedAnswer !== null}
+                                        style={{
+                                            backgroundColor: answer === question.correctAnswer && selectedAnswer ? '#28f745' : undefined,
+                                            borderColor: answer === question.correctAnswer && selectedAnswer ? '#28f745' : undefined,
+                                        }}
                                     >
                                         {answer}
                                     </Button>
@@ -80,11 +93,19 @@ export default function LessonOne() {
                         })}
                     </Row>
 
-                    <div className="mt-3">
-                        <Button variant="secondary" onClick={handleNextQuestion} disabled={!selectedAnswer}>
-                            Next Question
-                        </Button>
-                    </div>
+                    <Row className="justify-content-center mt-3">
+                        <Col xs={8} md={4} lg={2} className="d-flex justify-content-center">
+                            <Button
+                                variant="secondary"
+                                onClick={handleNextQuestion}
+                                disabled={!selectedAnswer}
+                                className="w-100"
+                            >
+                                Next Question
+                            </Button>
+                        </Col>
+                    </Row>
+
                 </div>
             )}
         </>
