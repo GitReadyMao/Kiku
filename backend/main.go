@@ -59,8 +59,9 @@ func main() {
 		v1.OPTIONS("user", options)
 
 		// term routes
-		v1.GET("nextterm", getNextTerm)
-		v1.POST("studyterm", studyTerm)
+		v1.GET("term", getNextTerm)
+		v1.GET("term-count", getTermCount)
+		v1.POST("study-term", studyTerm)
 	}
 
 	// By default it serves on :8080 unless a
@@ -305,14 +306,34 @@ func getNextTerm(c *gin.Context) {
 		return
 	}
 
+	//Read the lesson from the header
+	lesson := c.Request.Header.Get("Lesson")
+
 	var nextTerm models.Studies
 
-	if err := db.Where("username = ?", getUsername(c)).Where("study_time < ?", time.Now()).Where("study_time = (?)", db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
+	if err := db.Where("username = ? AND lesson = ? AND study_time < ? AND study_time = (?)", getUsername(c), lesson, time.Now(), db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": nextTerm})
+}
+
+func getTermCount(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	//Read the lesson from the header
+	lesson := c.Request.Header.Get("Lesson")
+
+	var count int64
+	db.Model(&models.Studies{}).Where("username = ? AND lesson = ?", getUsername(c), lesson).Count(&count)
+
+	c.JSON(http.StatusOK, gin.H{"count": count})
 }
 
 func studyTerm(c *gin.Context) {
@@ -324,8 +345,9 @@ func studyTerm(c *gin.Context) {
 	}
 
 	type StudyQuery struct {
-		TermId   int
-		LevelMod int
+		TermId   int `json:"term_id"`
+		Lesson   int `json:"lesson"`
+		LevelMod int `json:"level_mod"`
 	}
 
 	//Start by reading in the term id and correctness
@@ -337,14 +359,14 @@ func studyTerm(c *gin.Context) {
 
 	//Get the current level
 	var level int
-	if err := db.Select("level").Where("username = ?", getUsername(c)).Where("term_id = ?", studyQuery.TermId).First(&level); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No such term"})
+	if err := db.Model(&models.Studies{}).Select("level").Where("username = ? AND term_id = ? AND lesson = ?", getUsername(c), studyQuery.TermId, studyQuery.Lesson).First(&level).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
 
 	//Update the level
-	if err := db.Where("username = ?", getUsername(c)).Where("term_id = ?", studyQuery.TermId).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No such term"})
+	if err := db.Where("username = ? AND term_id = ? AND lesson = ?", getUsername(c), studyQuery.TermId, studyQuery.Lesson).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
 

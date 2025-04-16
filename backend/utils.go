@@ -44,5 +44,5 @@ func getUsername(c *gin.Context) string {
 }
 
 func getSRSTime(level int) time.Time {
-	return time.Now().Add(time.Minute * time.Duration(level*6))
+	return time.Now().Add(time.Minute * time.Duration(level))
 }

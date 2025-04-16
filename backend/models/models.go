@@ -22,6 +22,7 @@ type Term struct {
 type Studies struct {
 	Username  string    `json:"username"`
 	TermId    int       `json:"term_id"`
+	Lesson    int       `json:"lesson"`
 	Level     int       `json:"level"`
 	StudyTime time.Time `json:"study_time"`
 }
