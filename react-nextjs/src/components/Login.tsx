@@ -35,19 +35,6 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
       .catch(error => {
         alert("login failed");
       })
-    // const response = await fetch(`${apiURL}/api/v1/login`, {
-    //   method: 'POST',
-    //   headers: {"Content-Type": "application/json"},
-    //   body: JSON.stringify({username, password})
-    // }).then(() => {
-    //   router.push("/dashboard");
-    // })
-    // Simulated authentication check
-    // if (email === "123@123.com" && password === "123") {
-    //   router.push("/dashboard");
-    // } else {
-    //   setError("Invalid email or password");
-    // }
   };
 
   return (
