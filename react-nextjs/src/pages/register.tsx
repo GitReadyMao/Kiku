@@ -28,7 +28,7 @@ function Registration(e: React.FormEvent) {
     }
     await axios.post(`${apiURL}/api/v1/register`, body)
       .then(() => {
-        router.push("/dashboard");
+        router.push("/");
       })
       .catch(error => {
         alert("login failed");
