@@ -29,6 +29,8 @@ type Studies struct {
 type Group struct {
 	Name        string `json:"name"`
 	MemberCount int    `json:"member_count"`
+	Leader      string `json:"leader"`
+	InviteCode  string `json:"invite_code"`
 }
 
 type PartOf struct {

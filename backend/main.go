@@ -65,9 +65,10 @@ func main() {
 		// group routes
 		v1.GET("group", getGroups) // get groups
 		//v1.GET("group/:")          // get group by name
-		//v1.GET("")                 // get user
-		v1.POST("unite", unite)       // create group
-		v1.POST("join", join)         // join group
+		v1.GET("lookup", lookup) // get user
+		v1.POST("unite", unite)  // create group
+		v1.POST("join", join)    // join group
+		v1.PUT("invite", invite)
 		v1.DELETE("leave", leave)     // leave group
 		v1.DELETE("disband", disband) // delete group
 	}
@@ -423,21 +424,26 @@ func join(c *gin.Context) {
 		return
 	}
 
+	type JoinQuery struct {
+		GroupCode string `json:"group_code"`
+	}
+	var jquery JoinQuery
+
 	var newGroup models.Group
 	username := getUsername(c)
 
 	//check format is correct
-	if err := c.ShouldBindJSON(&newGroup); err != nil {
+	if err := c.ShouldBindJSON(&jquery); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.First(&newGroup, "name = ?", newGroup.Name).Error; err != nil {
+	if err := db.First(&newGroup, "invite_code = ?", jquery.GroupCode).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
 		return
 	}
 
-	db.Model(&newGroup).Where("name = ?", newGroup.Name).Updates(models.Group{Name: newGroup.Name, MemberCount: newGroup.MemberCount + 1})
+	db.Model(&newGroup).Where("name = ?", newGroup.Name).Updates(models.Group{MemberCount: newGroup.MemberCount + 1})
 
 	//fill in partof relation
 	var newPart models.PartOf
@@ -519,4 +525,33 @@ func disband(c *gin.Context) {
 	//delete users from partof table
 	db.Where("group_name = ?", group.Name).Delete(&models.PartOf{})
 	c.JSON(http.StatusOK, gin.H{"message": "Group deleted successfully"})
+}
+
+func invite(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var partOf models.PartOf
+	var newGroup models.Group
+	username := getUsername(c)
+
+	partOf.Username = username
+
+	if err := db.First(&partOf, "username = ?", username).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		return
+	}
+
+	db.Model(&newGroup).Where("name = ?", partOf.GroupName).Updates(models.Group{InviteCode: generateInviteCode(c)})
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Successfully created invite code"})
+}
+
+func lookup(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
 }
