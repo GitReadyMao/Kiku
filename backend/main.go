@@ -60,6 +60,7 @@ func main() {
 
 		// term routes
 		v1.GET("term", getNextTerm)
+		v1.GET("question-terms", getQuestionTerms)
 		v1.GET("term-count", getTermCount)
 		v1.POST("study-term", studyTerm)
 	}
@@ -311,12 +312,60 @@ func getNextTerm(c *gin.Context) {
 
 	var nextTerm models.Studies
 
-	if err := db.Where("username = ? AND lesson = ? AND study_time < ? AND study_time = (?)", getUsername(c), lesson, time.Now(), db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
+	if err := db.Table("Studies").Where("username = ? AND term_id IN (?) AND study_time < ? AND study_time = (?)",
+		getUsername(c),
+		db.Table("Term").Where("lesson = ?", lesson).Select("id"),
+		time.Now(),
+		db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
+
 		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": nextTerm})
+}
+
+func getQuestionTerms(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	//Read the params from the header
+	id := c.Request.Header.Get("ID")
+
+	//Get the term (correct answer)
+	var term models.Term
+	if err := db.Table("Term").Where("id = ?", id).First(&term).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	//Get the other answers, with the number based on the user's level in the term
+	var level int
+	if err := db.Table("Studies").Where("username = ? AND term_id = ?").Select("level").First(&level).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var answers int
+	if level < 2 {
+		answers = 1
+	} else if level < 5 {
+		answers = 3
+	} else {
+		answers = 0
+	}
+
+	var questionTerms []models.Term
+	if err := db.Table("Term").Where("group = ? AND id <> ?", term.Group, id).Limit(answers).Find(&questionTerms).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"term": term, "choices": questionTerms})
 }
 
 func getTermCount(c *gin.Context) {
@@ -331,7 +380,10 @@ func getTermCount(c *gin.Context) {
 	lesson := c.Request.Header.Get("Lesson")
 
 	var count int64
-	db.Model(&models.Studies{}).Where("username = ? AND lesson = ?", getUsername(c), lesson).Count(&count)
+	db.Table("Studies").Where("username = ? AND term_id IN (?) AND study_time < ?",
+		getUsername(c),
+		db.Table("Term").Where("lesson = ?", lesson).Select("id"),
+		time.Now()).Count(&count)
 
 	c.JSON(http.StatusOK, gin.H{"count": count})
 }
@@ -346,7 +398,6 @@ func studyTerm(c *gin.Context) {
 
 	type StudyQuery struct {
 		TermId   int `json:"term_id"`
-		Lesson   int `json:"lesson"`
 		LevelMod int `json:"level_mod"`
 	}
 
@@ -359,13 +410,13 @@ func studyTerm(c *gin.Context) {
 
 	//Get the current level
 	var level int
-	if err := db.Model(&models.Studies{}).Select("level").Where("username = ? AND term_id = ? AND lesson = ?", getUsername(c), studyQuery.TermId, studyQuery.Lesson).First(&level).Error; err != nil {
+	if err := db.Table("Studies").Select("level").Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).First(&level).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
 
 	//Update the level
-	if err := db.Where("username = ? AND term_id = ? AND lesson = ?", getUsername(c), studyQuery.TermId, studyQuery.Lesson).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}).Error; err != nil {
+	if err := db.Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}

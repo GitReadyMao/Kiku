@@ -14,15 +14,14 @@ type Term struct {
 	Id         int    `json:"id"`
 	Hiragana   string `json:"hiragana"`
 	Kanji      string `json:"kanji"`
-	Katakana   string `json:"katakana"`
 	Definition string `json:"definition"`
 	Lesson     int    `json:"lesson"`
+	Group      int    `json:"group"`
 }
 
 type Studies struct {
 	Username  string    `json:"username"`
 	TermId    int       `json:"term_id"`
-	Lesson    int       `json:"lesson"`
 	Level     int       `json:"level"`
 	StudyTime time.Time `json:"study_time"`
 }
