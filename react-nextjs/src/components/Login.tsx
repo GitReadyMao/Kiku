@@ -5,9 +5,11 @@ import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
 
+
 export interface Login {
   className?: string | undefined;
 }
+
 
 const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
   //apiURL for demonstration purposes, move to env?
@@ -28,7 +30,13 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
       username: username,
       password: password
     }
-    await axios.post(`${apiURL}/api/v1/login`, body)
+
+    const apiClient = axios.create({
+      baseURL: "http://localhost:8080",
+      withCredentials: true,
+    });
+
+    await apiClient.post(`${apiURL}/api/v1/login`, body)
       .then(() => {
         router.push("/dashboard");
       })
@@ -72,9 +80,9 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
                 required
               />
 
-            <p className="mt-3">
-              <a href="/ForgotPassword">Forgot password?</a>
-            </p>
+              <p className="mt-3">
+                <a href="/ForgotPassword">Forgot password?</a>
+              </p>
 
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicCheckbox">
