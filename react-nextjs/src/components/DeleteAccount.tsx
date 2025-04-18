@@ -5,16 +5,39 @@ import { useRouter } from "next/router";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import axios from "axios";
 
 const DeleteAccount: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleDelete = () => {
-    setError("");
-    // Add deletion logic here (e.g., API call, router.push after success)
+
+  const apiClient = axios.create({
+    baseURL: "http://localhost:8080",
+    withCredentials: true,
+  });
+
+  apiClient.interceptors.request.use((config) => {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrf_token"))?.split("=")[1];
+    if (csrfToken) {
+      config.headers["X-CSRF-Token"] = csrfToken;
+    }
+    return config;
+  });
+
+  const handleDelete = async () => {
+      await apiClient.delete("/api/v1/user")
+      .then(() => {
+        router.push("/");
+      })
+      .catch(error => {
+        alert("delete failed");
+      })
   };
+  
 
   return (
     <Container className="mt-5">
