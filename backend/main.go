@@ -55,6 +55,7 @@ func main() {
 		v1.DELETE("user", deleteUser)
 		v1.POST("login", login)
 		v1.POST("logout", logout)
+		v1.GET("current-user", getCurrentUser)
 		v1.OPTIONS("user", options)
 	}
 
@@ -250,6 +251,24 @@ func deleteUser(c *gin.Context) {
 
 	db.Delete(&user, "username = ?", username)
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+func getCurrentUser(c *gin.Context) {
+
+	// Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	username := getUsername(c)
+	if username == "" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized 2"})
+		return
+	}
+
+	// Return the username
+	c.JSON(http.StatusOK, gin.H{"username": username})
 }
 
 func options(c *gin.Context) {
