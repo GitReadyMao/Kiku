@@ -4,6 +4,7 @@ import Form from "react-bootstrap/Form";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import GetUsername from "./Username";
 
 interface UsernameFormProps {
   currentUsername: string;
@@ -14,6 +15,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ currentUsername, onUpdateUs
   const [newUsername, setNewUsername] = useState("");
   const [confirmUsername, setConfirmUsername] = useState("");
   const [error, setError] = useState("");
+  
 
   const handleUsernameChange = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +44,7 @@ const UsernameForm: React.FC<UsernameFormProps> = ({ currentUsername, onUpdateUs
           <h2 className="text-center mb-4">Change Username</h2>
             <Form.Group className="mb-3" controlId="formCurrentUsername">
               <Form.Label>Current Username</Form.Label>
-              <Form.Control type="text" value={currentUsername} disabled />
+              <Form.Control type="text" value={GetUsername()} disabled />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formNewUsername">

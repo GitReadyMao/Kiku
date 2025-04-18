@@ -2,6 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import GetUsername from './Username';
 
 function ProfileBar() {
   return (
@@ -12,7 +13,7 @@ function ProfileBar() {
         <Nav className="me-auto">
           <Nav.Link href="/Leaderboards">Leaderboards</Nav.Link>
         </Nav>
-        <NavDropdown title="Username" id="navbarScrollingDropdown">
+        <NavDropdown title={GetUsername()} id="navbarScrollingDropdown">
           <NavDropdown.Item href="/Profile">Profile</NavDropdown.Item>
           <NavDropdown.Divider />
           <NavDropdown.Item href="/">
