@@ -23,8 +23,9 @@ const ForgotPasswordForm: React.FC = () => {
   };
 
   return (
+    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "40vh" }}>
     <Form onSubmit={handleResetPassword}>
-      <h2>Forgot Password</h2>
+      <h2 className="d-flex justify-content-center align-items-center">Forgot Password</h2>
       <p>Enter your email to receive a password reset link.</p>
 
       <Form.Group className="mb-3" controlId="formEmail">
@@ -45,6 +46,7 @@ const ForgotPasswordForm: React.FC = () => {
         Send Reset Link
       </Button>
     </Form>
+    </div>
   );
 };
 
