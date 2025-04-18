@@ -6,21 +6,21 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import axios from "axios";
-import getCookie from "@/util/cookies";
+import { getCsrfToken } from "@/util/token";
 
 const DeleteAccount: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState("");
+  const [error] = useState("");
   const router = useRouter();
+
   const apiClient = axios.create({
     baseURL: "http://localhost:8080",
     withCredentials: true,
   });
   const handleDelete = async () => {
-    const cookie = getCookie("csrf_token"); //Should only be ran once during login
     await apiClient.delete(`/api/v1/user`, {
       headers: {
-        'X-CSRF-Token': cookie //Must be added for every API call
+        'X-CSRF-Token': getCsrfToken() //Must be added for every API
       }
     });
     router.push("/");

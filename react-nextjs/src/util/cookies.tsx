@@ -1,4 +1,4 @@
-function getCookie(cname: string) {
+function getCookie(cname: string) { //Function is from https://www.w3schools.com/js/js_cookies.asp
     let name = cname + "=";
     let decodedCookie = decodeURIComponent(document.cookie);
     let ca = decodedCookie.split(';');
