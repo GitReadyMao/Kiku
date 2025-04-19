@@ -7,13 +7,12 @@ export default async function InitializeLesson() {
         withCredentials: true,
     });
 
-    await apiClient.put(`/api/v1/initialize-lesson`, {
+    await apiClient.put(`/api/v1/initialize-lesson`, { 'lesson': 1 }, {
         headers: {
             'X-CSRF-Token': getCsrfToken(),
-            'Lesson': 1
         }
     })
-    .then(value => {
-        console.log("test: " + value.data)
-    })
+        .then(value => {
+            console.log("test: " + value.data)
+        })
 }

@@ -2,25 +2,79 @@ import ProfileBar from "@/components/ProfileBar";
 import Button from "react-bootstrap/esm/Button";
 import { FaVolumeUp } from "react-icons/fa";
 import questionBank from "./LessonOneQuestions";
-import React, { useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import useSound from 'use-sound';
-import GetNextTerm from "./lessonapi";
+import GetTermCount from "./Lessonapi copy";
+import axios from "axios";
+import { getCsrfToken } from "@/util/token";
+import shuffleArray from "@/util/shuffle";
 
 export default function LessonOne() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //Updates what question you're currently on
     const question = questionBank[currentQuestionIndex];
-    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null); //used for handling checking answers atm
+    const [selectedAnswer, setSelectedAnswer] = useState<any | null>(null); //used for handling checking answers atm
     const [correctAnswersCount, setCorrectAnswersCount] = useState(0); // keeps track of # of correct questions (TODO: add scoring/SRS components to this)
     const [showResults, setShowResults] = useState(false);
-    const [playSound] = useSound("/mp3/お前【おまえ】.mp3");
 
-    //console.log("hai:) " + GetNextTerm());
-    const handleAnswerClick = (answer: string) => {
-        setSelectedAnswer(answer);
-        if (answer === question.correctAnswer) {
-            setCorrectAnswersCount(correctAnswersCount + 1);
+    const [loading, setLoading] = useState(true);
+    const [termId, setTermId] = useState(0);
+    const [answer, setAnswer] = useState<any>();
+    const [questionTerms, setQuestionTerms] = useState<any[]>();
+
+    const [playSound] = answer !== undefined ? useSound("/mp3/" + answer.kanji + "【" + answer.hiragana + "】.mp3") : useSound("/mp3/お前【おまえ】.mp3");
+
+    async function getTerms() {
+        setLoading(true);
+
+        const apiClient = axios.create({
+            baseURL: "http://localhost:8080",
+            withCredentials: true,
+        });
+
+        await apiClient.get(`/api/v1/term`, {
+            headers: {
+                'X-CSRF-Token': getCsrfToken(),
+                'Lesson': 1,
+            }
+        }).then((response) => {
+            setTermId(response.data.data.term_id);
+        }).catch(err => console.error(err));
+
+        await apiClient.get(`/api/v1/question-terms`, {
+            headers: {
+                'X-CSRF-Token': getCsrfToken(),
+                'ID': 1,
+            }
+        }).then((response) => {
+            console.log("r", response)
+            setAnswer(response.data.term);
+            var choices: Array<any> = response.data.choices;
+            choices.push(response.data.term);
+            shuffleArray(choices);
+            setQuestionTerms(choices);
+        }).catch(err => console.error(err));
+
+        setLoading(false);
+    }
+
+    useEffect(() => {
+        getTerms();
+        console.log("t", termId)
+        console.log("a", answer)
+        console.log("q", questionTerms)
+    }, [termId]);
+
+    const handleAnswerClick = (ans: any) => {
+        setSelectedAnswer(ans);
+        if (ans.id === answer.id) {
+            //study term api
+            console.log("Good job chuddy");
+        }
+        else {
+            //study term api
+            console.log("Fuck you chuddy");
         }
     };
     const handleNextQuestion = () => {
@@ -36,7 +90,7 @@ export default function LessonOne() {
     return (
         <>
             <br />
-            <ProfileBar />            
+            <ProfileBar />
             {showResults ? ( //handles displaying results 
                 <div className="text-center">
                     <h2 className="mt-3">Quiz completed!</h2>
@@ -52,7 +106,7 @@ export default function LessonOne() {
                     <br></br>
 
                     <div className="text-center">
-                        <Button onClick={() => playSound()}>
+                        <Button onClick={() => useSound("/mp3/" + answer.kanji + "【" + answer.hiragana + "】.mp3")}>
                             <FaVolumeUp style={{ fontSize: '6vw' }} />
                             <span className="ms-1"> Click here to listen</span>
                         </Button>
@@ -61,7 +115,41 @@ export default function LessonOne() {
                     <br></br>
 
                     <Row className="justify-content-center">
-                        {question.answers.map((answer, index) => {
+                        {loading ? (<></>) : questionTerms !== undefined ? (
+                            questionTerms.map((term: any) => {
+                                let variant: "outline-primary" | "success" | "danger" = "outline-primary";
+
+                                if (selectedAnswer) {
+                                    if (term.id === answer.id) {
+                                        variant = "success"; // Green if correct
+                                    } else if (term.id === selectedAnswer.id) {
+                                        variant = "danger"; // Red if incorrect
+                                    }
+                                }
+
+                                return (
+                                    <Col
+                                        key={term.id}
+                                        xs={6} md={5} lg={5}
+                                        className="d-flex justify-content-center mb-3"
+                                    >
+                                        <Button
+                                            size="lg"
+                                            className={`w-100 fw-bold fs-4 ${selectedAnswer !== null && term.id === answer.id && selectedAnswer.id ? 'custom-bright-green' : ''}`}
+                                            variant={variant}
+                                            onClick={() => handleAnswerClick(term)}
+                                            disabled={selectedAnswer !== null}
+                                            style={{
+                                                backgroundColor: selectedAnswer !== null && term.id === answer.id && selectedAnswer.id ? '#28f745' : undefined,
+                                                borderColor: selectedAnswer !== null && term.id === answer.id && selectedAnswer.id ? '#28f745' : undefined,
+                                            }}
+                                        >
+                                            {term.hiragana}
+                                        </Button>
+                                    </Col>
+                                );
+                            })) : "Nothing to see here"}
+                        {/* {question.answers.map((answer, index) => {
                             let variant: "outline-primary" | "success" | "danger" = "outline-primary";
 
                             if (selectedAnswer) {
@@ -93,7 +181,7 @@ export default function LessonOne() {
                                     </Button>
                                 </Col>
                             );
-                        })}
+                        })} */}
                     </Row>
 
                     <Row className="justify-content-center mt-3">
@@ -104,7 +192,7 @@ export default function LessonOne() {
                                 disabled={!selectedAnswer}
                                 className="w-100"
                             >
-                                Next Question
+                                Next Question: {GetTermCount()}
                             </Button>
                         </Col>
                     </Row>

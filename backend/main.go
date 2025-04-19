@@ -492,12 +492,12 @@ func initializeLesson(c *gin.Context) {
 	}
 
 	type InitializeQuery struct {
-		Lesson string `json:"lesson"`
+		Lesson int `json:"lesson"`
 	}
 
 	//Read the params
 	var initializeQuery InitializeQuery
-	if err := c.ShouldBindQuery(&initializeQuery); err != nil {
+	if err := c.ShouldBindJSON(&initializeQuery); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -521,5 +521,5 @@ func initializeLesson(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Lesson " + initializeQuery.Lesson + " initialized"})
+	c.JSON(http.StatusOK, gin.H{"message": "Lesson initialized"})
 }
