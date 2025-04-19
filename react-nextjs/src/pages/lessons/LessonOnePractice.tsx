@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import useSound from 'use-sound';
+import GetNextTerm from "./lessonapi";
 
 export default function LessonOne() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //Updates what question you're currently on
@@ -15,6 +16,7 @@ export default function LessonOne() {
     const [showResults, setShowResults] = useState(false);
     const [playSound] = useSound("/mp3/お前【おまえ】.mp3");
 
+    //console.log("hai:) " + GetNextTerm());
     const handleAnswerClick = (answer: string) => {
         setSelectedAnswer(answer);
         if (answer === question.correctAnswer) {
@@ -34,8 +36,7 @@ export default function LessonOne() {
     return (
         <>
             <br />
-            <ProfileBar />
-
+            <ProfileBar />            
             {showResults ? ( //handles displaying results 
                 <div className="text-center">
                     <h2 className="mt-3">Quiz completed!</h2>

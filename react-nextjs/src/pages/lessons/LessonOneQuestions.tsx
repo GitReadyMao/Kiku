@@ -1,4 +1,4 @@
-  const questionBank = [
+const questionBank = [
     {
       id: 1,
       question: "Which of the following sounds do you hear?",
