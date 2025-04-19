@@ -376,7 +376,7 @@ func getNextTerm(c *gin.Context) {
 		time.Now(),
 		db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
 
-		c.JSON(http.StatusOK, gin.H{"message": "No terms to study"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "No terms to study"})
 		return
 	}
 
@@ -471,6 +471,10 @@ func studyTerm(c *gin.Context) {
 	}
 
 	//Update the level
+	if level <= 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "Term Studied"})
+		return
+	}
 	if err := db.Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
