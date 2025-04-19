@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"log"
+	random "math/rand"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -45,4 +46,28 @@ func getUsername(c *gin.Context) string {
 
 func getSRSTime(level int) time.Time {
 	return time.Now().Add(time.Minute * time.Duration(level))
+}
+
+func getRandomTerms(array []models.Term, count int) []models.Term {
+	result := make([]models.Term, 0)
+	existingIndexes := make(map[int]struct{}, 0)
+
+	for i := 0; i < count; i++ {
+		randomIndex := randomIndex(len(array), existingIndexes)
+		result = append(result, array[randomIndex])
+	}
+
+	return result
+}
+
+func randomIndex(size int, existingIndexes map[int]struct{}) int {
+	for {
+		randomIndex := random.Intn(size)
+
+		_, exists := existingIndexes[randomIndex]
+		if !exists {
+			existingIndexes[randomIndex] = struct{}{}
+			return randomIndex
+		}
+	}
 }

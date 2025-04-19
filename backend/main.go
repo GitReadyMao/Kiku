@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -40,7 +41,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "X-CSRF-Token", "Authorization", "Origin"},
+		AllowHeaders:     []string{"Content-Type", "X-CSRF-Token", "Authorization", "Origin", "Lesson", "ID"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
@@ -406,22 +407,20 @@ func getQuestionTerms(c *gin.Context) {
 		return
 	}
 
-	var answers int
-	if level < 2 {
-		answers = 1
-	} else if level < 5 {
-		answers = 3
-	} else {
-		answers = 0
-	}
-
 	var questionTerms []models.Term
-	if err := db.Table("Term").Where("group = ? AND id <> ?", term.Group, id).Limit(answers).Find(&questionTerms).Error; err != nil {
+	if err := db.Table("Term").Where("group = ? AND id <> ?", term.Group, id).Find(&questionTerms).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"term": term, "choices": questionTerms})
+	choices := make([]models.Term, 0)
+	if level < 2 {
+		choices = append(choices, questionTerms[rand.Intn(len(questionTerms)-1)])
+	} else if level < 5 {
+		choices = append(choices, getRandomTerms(questionTerms, 3)...)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"term": term, "choices": choices})
 }
 
 func getTermCount(c *gin.Context) {
