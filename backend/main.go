@@ -491,13 +491,21 @@ func initializeLesson(c *gin.Context) {
 		return
 	}
 
-	//Read the params from the header
-	lesson := c.Request.Header.Get("Lesson")
+	type InitializeQuery struct {
+		Lesson string `json:"lesson"`
+	}
+
+	//Read the params
+	var initializeQuery InitializeQuery
+	if err := c.ShouldBindQuery(&initializeQuery); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	username := getUsername(c)
 
 	//Get terms
 	var terms []models.Term
-	if err := db.Table("Term").Where("lesson = ?", lesson).Find(&terms).Error; err != nil {
+	if err := db.Table("Term").Where("lesson = ?", initializeQuery.Lesson).Find(&terms).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
@@ -513,5 +521,5 @@ func initializeLesson(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Lesson " + lesson + " initialized"})
+	c.JSON(http.StatusOK, gin.H{"message": "Lesson " + initializeQuery.Lesson + " initialized"})
 }
