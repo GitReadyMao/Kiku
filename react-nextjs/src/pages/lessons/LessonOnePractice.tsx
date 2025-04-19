@@ -23,7 +23,7 @@ export default function LessonOne() {
     const [answer, setAnswer] = useState<any>();
     const [questionTerms, setQuestionTerms] = useState<any[]>();
 
-    const [playSound] = answer !== undefined ? useSound("/mp3/" + answer.kanji + "【" + answer.hiragana + "】.mp3") : useSound("/mp3/お前【おまえ】.mp3");
+    const [playSound] = useSound("/mp3/お前【おまえ】.mp3");
 
     async function getTerms() {
         setLoading(true);
@@ -106,7 +106,7 @@ export default function LessonOne() {
                     <br></br>
 
                     <div className="text-center">
-                        <Button onClick={() => useSound("/mp3/" + answer.kanji + "【" + answer.hiragana + "】.mp3")}>
+                        <Button onClick={() => playSound()}>
                             <FaVolumeUp style={{ fontSize: '6vw' }} />
                             <span className="ms-1"> Click here to listen</span>
                         </Button>
