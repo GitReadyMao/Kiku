@@ -31,12 +31,12 @@ func generateToken(length int) string {
 func getUsername(c *gin.Context) string {
 	st, err := c.Cookie("session_token")
 	if err != nil || st == "" {
-		return ""
+		return "Failed to retrieve session token"
 	}
 
 	var user models.User
 	if db.First(&user, "session_token = ?", st).Error != nil {
-		return ""
+		return "Failed to retrieve user from session token"
 	}
 
 	return user.Username

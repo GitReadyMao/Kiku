@@ -20,7 +20,7 @@ func Authorize(c *gin.Context) error {
 		//log.Println("Authorize error: No such user")
 		return errors.New("error: No such user")
 	}
-	//log.Println("Authorize: found user =", member.Username)
+	//log.Println("Authorize: found user =", user.Username)
 
 	// Check session token
 	st, err := c.Cookie("session_token")
