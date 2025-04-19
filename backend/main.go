@@ -376,7 +376,7 @@ func getNextTerm(c *gin.Context) {
 		time.Now(),
 		db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
 
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
+		c.JSON(http.StatusOK, gin.H{"message": "No terms to study"})
 		return
 	}
 
