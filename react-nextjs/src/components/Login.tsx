@@ -81,9 +81,9 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
                 required
               />
 
-              <p className="mt-3">
+              {/* <p className="mt-3">
                 <a href="/ForgotPassword">Forgot password?</a>
-              </p>
+              </p> */}
 
             </Form.Group>
             <Form.Group className="mb-3" controlId="formBasicCheckbox">
