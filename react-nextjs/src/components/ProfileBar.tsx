@@ -3,8 +3,31 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import GetUsername from './Username';
+import axios from 'axios';
+import router from 'next/router';
+import { getCsrfToken } from '@/util/token';
 
 function ProfileBar() {
+  const handlelogout = async () => {
+    const apiClient = axios.create({
+      baseURL: "http://localhost:8080",
+      withCredentials: true,
+    });
+
+    const body = {}
+    await apiClient.post(`/api/v1/logout`, body, {
+      headers: {
+        'X-CSRF-Token': getCsrfToken() //Must be added for every API
+      }
+    })
+      .then(() => {
+        router.push("/");
+      })
+      .catch(() => {
+        alert("logout failed");
+      })
+  };
+
   return (
     <Navbar style={{ backgroundColor: '#ffb7c5' }} fixed="top">
       <Container>
@@ -16,7 +39,7 @@ function ProfileBar() {
         <NavDropdown title={GetUsername()} id="navbarScrollingDropdown">
           <NavDropdown.Item href="/Profile">Profile</NavDropdown.Item>
           <NavDropdown.Divider />
-          <NavDropdown.Item href="/">
+          <NavDropdown.Item onClick={handlelogout}>
             Logout
           </NavDropdown.Item>
         </NavDropdown>

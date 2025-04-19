@@ -41,7 +41,7 @@ const ExampleOffcanvas: React.FC<Login> = ({ className }) => {
       .then(() => {
         router.push("/dashboard");
       })
-      .catch(error => {
+      .catch(() => {
         alert("login failed");
       })
   };
