@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"gshare.com/platform/models"
 )
@@ -22,7 +23,6 @@ func connectDatabase() error {
 	if err != nil {
 		panic("Error connecting/creating the sqlite db")
 	}
-	db.AutoMigrate(&models.User{})
 	return err
 }
 
@@ -65,6 +65,7 @@ func main() {
 		v1.GET("question-terms", getQuestionTerms)
 		v1.GET("term-count", getTermCount)
 		v1.POST("study-term", studyTerm)
+		v1.PUT("initialize-lesson", initializeLesson)
 	}
 
 	// By default it serves on :8080 unless a
@@ -400,23 +401,22 @@ func getQuestionTerms(c *gin.Context) {
 		return
 	}
 
-	//Get the other answers, with the number based on the user's level in the term
-	var level int
-	if err := db.Table("Studies").Where("username = ? AND term_id = ?").Select("level").First(&level).Error; err != nil {
+	var studyTerm models.Studies
+	if err := db.Table("Studies").Where("username = ? AND term_id = ?", getUsername(c), id).First(&studyTerm).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
 		return
 	}
 
 	var questionTerms []models.Term
-	if err := db.Table("Term").Where("group = ? AND id <> ?", term.Group, id).Find(&questionTerms).Error; err != nil {
+	if err := db.Table("Term").Where("group_id = ? AND id <> ?", term.GroupId, id).Find(&questionTerms).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
 
 	choices := make([]models.Term, 0)
-	if level < 2 {
-		choices = append(choices, questionTerms[rand.Intn(len(questionTerms)-1)])
-	} else if level < 5 {
+	if studyTerm.Level < 2 {
+		choices = append(choices, questionTerms[rand.Intn(len(questionTerms))])
+	} else if studyTerm.Level < 5 {
 		choices = append(choices, getRandomTerms(questionTerms, 3)...)
 	}
 
@@ -477,4 +477,37 @@ func studyTerm(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Term Studied"})
+}
+
+func initializeLesson(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	//Read the params from the header
+	lesson := c.Request.Header.Get("Lesson")
+	username := getUsername(c)
+
+	//Get terms
+	var terms []models.Term
+	if err := db.Table("Term").Where("lesson = ?", lesson).Find(&terms).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	//Parse the terms and add to studies
+	userTerms := make([]models.Studies, 0)
+	for _, term := range terms {
+		userTerms = append(userTerms, models.Studies{Username: username, TermId: term.Id, Level: 0, StudyTime: time.Now()})
+	}
+
+	if err := db.Table("Studies").Clauses(clause.OnConflict{DoNothing: true}).Create(userTerms).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Lesson " + lesson + " initialized"})
 }

@@ -16,7 +16,7 @@ type Term struct {
 	Kanji      string `json:"kanji"`
 	Definition string `json:"definition"`
 	Lesson     int    `json:"lesson"`
-	Group      int    `json:"group"`
+	GroupId    int    `json:"group_id"`
 }
 
 type Studies struct {
