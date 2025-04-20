@@ -6,24 +6,42 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import useSound from 'use-sound';
-import GetTermCount from "./Lessonapi copy";
 import axios from "axios";
 import { getCsrfToken } from "@/util/token";
 import shuffleArray from "@/util/shuffle";
 
 export default function LessonOne() {
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); //Updates what question you're currently on
-    const question = questionBank[currentQuestionIndex];
     const [selectedAnswer, setSelectedAnswer] = useState<any | null>(null); //used for handling checking answers atm
-    const [correctAnswersCount, setCorrectAnswersCount] = useState(0); // keeps track of # of correct questions (TODO: add scoring/SRS components to this)
     const [showResults, setShowResults] = useState(false);
 
     const [loading, setLoading] = useState(true);
+    const [termCount, setTermCount] = useState(0);
     const [termId, setTermId] = useState(0);
     const [answer, setAnswer] = useState<any>();
     const [questionTerms, setQuestionTerms] = useState<any[]>();
 
-    const [playSound] = useSound("/mp3/お前【おまえ】.mp3");
+    const [playSound] = useSound("/mp3/感じ【かんじ】.mp3");
+
+    async function getTermCount() {
+        setLoading(true);
+        const apiClient = axios.create({
+            baseURL: "http://localhost:8080",
+            withCredentials: true,
+        });
+
+        await apiClient.get(`/api/v1/term-count`, {
+            headers: {
+                'X-CSRF-Token': getCsrfToken(),
+                'Lesson': 1,
+            }
+        }).then((response) => {
+            setTermCount(response.data.count);
+        }).catch(err => console.error(err));
+        setLoading(false);
+    }
+    useEffect(() => {
+        getTermCount();
+    }, [termCount]);
 
     async function getTerms() {
         setLoading(true);
@@ -40,15 +58,15 @@ export default function LessonOne() {
             }
         }).then((response) => {
             setTermId(response.data.data.term_id);
+            console.log("change to", termId)
         }).catch(err => console.error(err));
 
         await apiClient.get(`/api/v1/question-terms`, {
             headers: {
                 'X-CSRF-Token': getCsrfToken(),
-                'ID': 1,
+                'ID': termId,
             }
         }).then((response) => {
-            console.log("r", response)
             setAnswer(response.data.term);
             var choices: Array<any> = response.data.choices;
             choices.push(response.data.term);
@@ -57,35 +75,59 @@ export default function LessonOne() {
         }).catch(err => console.error(err));
 
         setLoading(false);
-    }
 
-    useEffect(() => {
-        getTerms();
         console.log("t", termId)
         console.log("a", answer)
         console.log("q", questionTerms)
-    }, [termId]);
+    }
+    useEffect(() => {
+        getTerms();
+    }, []);
+
+    async function studyTerm(lvlMod: number) {
+        setLoading(true);
+        const apiClient = axios.create({
+            baseURL: "http://localhost:8080",
+            withCredentials: true,
+        });
+
+        await apiClient.post(`/api/v1/study-term`, {
+            'term_id': termId,
+            'level_mod': lvlMod,
+        }, {
+            headers: {
+                'X-CSRF-Token': getCsrfToken(),
+            }
+        }).then(() => { console.log("term studied: " + termId + " " + lvlMod) }).catch(err => console.error(err));
+        setLoading(false);
+    }
 
     const handleAnswerClick = (ans: any) => {
         setSelectedAnswer(ans);
         if (ans.id === answer.id) {
             //study term api
+            studyTerm(1);
             console.log("Good job chuddy");
         }
         else {
             //study term api
+            studyTerm(-1);
             console.log("Fuck you chuddy");
         }
     };
     const handleNextQuestion = () => {
-        if (currentQuestionIndex < questionBank.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        if (termCount > 0) {
+            setShowResults(false);
+            getTerms();
             setSelectedAnswer(null); // Reset selection for the new question
         }
         else {
             setShowResults(true);  //Show results screen after quiz is completed
         }
     }
+    useEffect(() => {
+        handleNextQuestion();
+    }, [termCount]);
 
     return (
         <>
@@ -93,8 +135,7 @@ export default function LessonOne() {
             <ProfileBar />
             {showResults ? ( //handles displaying results 
                 <div className="text-center">
-                    <h2 className="mt-3">Quiz completed!</h2>
-                    <h4>You got {correctAnswersCount} out of {questionBank.length} correct!</h4>
+                    <h2 className="mt-3">Lesson completed!</h2>
                     <Button variant="primary" className="mt-3" onClick={() => window.location.reload()}>
                         Restart Quiz
                     </Button>
@@ -192,7 +233,7 @@ export default function LessonOne() {
                                 disabled={!selectedAnswer}
                                 className="w-100"
                             >
-                                Next Question: {GetTermCount()}
+                                Next Question: {termCount}
                             </Button>
                         </Col>
                     </Row>

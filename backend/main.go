@@ -464,18 +464,18 @@ func studyTerm(c *gin.Context) {
 	}
 
 	//Get the current level
-	var level int
-	if err := db.Table("Studies").Select("level").Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).First(&level).Error; err != nil {
+	var studies models.Studies
+	if err := db.Table("Studies").Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).First(&studies).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
 
 	//Update the level
-	if level <= 0 {
+	if studyQuery.LevelMod == -1 && studies.Level <= 0 {
 		c.JSON(http.StatusOK, gin.H{"message": "Term Studied"})
 		return
 	}
-	if err := db.Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}).Error; err != nil {
+	if err := db.Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).Updates(models.Studies{Level: studies.Level + studyQuery.LevelMod, StudyTime: getSRSTime(studies.Level + studyQuery.LevelMod)}).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
