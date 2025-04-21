@@ -456,7 +456,7 @@ func join(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": part_result.Error})
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Successfully joined group: " + newGroup.Name})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully joined group: " + newGroup.Name})
 }
 
 func leave(c *gin.Context) {
@@ -493,7 +493,7 @@ func leave(c *gin.Context) {
 
 	db.Where("username = ?", newPart.Username).Delete(&newPart)
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Successfully left group: " + newGroup.Name})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully left group: " + newGroup.Name})
 }
 
 func disband(c *gin.Context) {
@@ -553,5 +553,17 @@ func lookup(c *gin.Context) {
 	if err := Authorize(c); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
 		return
+	}
+
+	var partOf models.PartOf
+	username := getUsername(c)
+
+	result := db.Select("group_name").First(&partOf, "username = ?", username)
+	if result.Error != nil {
+		//c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not part of a group"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"username": username, "data": result})
 	}
 }
