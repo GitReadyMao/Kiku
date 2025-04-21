@@ -4,6 +4,8 @@ go 1.23.6
 
 require github.com/gin-gonic/gin v1.10.0
 
+require github.com/mazen160/go-random v0.0.0-20210308102632-d2b501c85c03 // indirect
+
 require (
 	github.com/bytedance/sonic v1.12.6 // indirect
 	github.com/bytedance/sonic/loader v0.2.1 // indirect

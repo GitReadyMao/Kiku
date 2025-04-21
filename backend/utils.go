@@ -4,8 +4,10 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mazen160/go-random"
 	"golang.org/x/crypto/bcrypt"
 	"gshare.com/platform/models"
 )
@@ -28,6 +30,32 @@ func generateToken(length int) string {
 	return base64.URLEncoding.EncodeToString(bytes)
 }
 
+func generateInviteCode(c *gin.Context) string {
+	st, err := c.Cookie("session_token")
+	if err != nil || st == "" {
+		return ""
+	}
+
+	unique := true
+
+	code, err := random.String(8)
+	if err != nil {
+		return ""
+	}
+	for unique {
+		var group models.Group
+		if db.First(&group, "invite_code = ?", code).Error != nil {
+			unique = false
+		} else {
+			code, err = random.String(8)
+			if err != nil {
+				return ""
+			}
+		}
+	}
+	return code
+}
+
 func getUsername(c *gin.Context) string {
 	st, err := c.Cookie("session_token")
 	if err != nil || st == "" {
@@ -40,4 +68,8 @@ func getUsername(c *gin.Context) string {
 	}
 
 	return user.Username
+}
+
+func getSRSTime(level int) time.Time {
+	return time.Now().Add(time.Minute * time.Duration(level*6))
 }
