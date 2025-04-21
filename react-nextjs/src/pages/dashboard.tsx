@@ -11,7 +11,7 @@ export default function Home() {
         <header className="text-center bg-green-200 py-10">
           <h1 className="text-4xl font-bold">Welcome to Lesson Overview</h1>
           <p style={{ fontSize: "20px" }}>View and select a lesson!</p>
-          <a href="/">
+          {/* <a href="/">
             <button
               
               style={{
@@ -25,8 +25,7 @@ export default function Home() {
             >
               Back To HomePage
             </button>
-          </a>
-
+          </a> */}
 
         </header>
        

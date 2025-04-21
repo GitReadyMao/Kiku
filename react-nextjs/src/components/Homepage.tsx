@@ -118,10 +118,10 @@ const Homepage: React.FC = () => {
       
       {/*Lessons Button*/}
       <div className="text-center mt-4" style={{ padding: "64px 16px" }} id="lesson">
-        <h1>Lessons Available</h1>
-        <p style={{ fontSize: "20px"}}>What we've created for your learning experience!</p>
+        <h1>There are Lessons Available!</h1>
+        <p style={{ fontSize: "20px"}}>Please Login or Register to see what we've created for your learning experience!</p>
 
-        <div className="text-center mt-4" style={{ margin: "64px" }}>
+        {/* <div className="text-center mt-4" style={{ margin: "64px" }}>
           <a href="/dashboard">
             <button className="btn btn-lg"
               style={{
@@ -136,8 +136,8 @@ const Homepage: React.FC = () => {
               View all Available Lessons
             </button>
             </a>
-        </div>
-
+        </div> */}
+        
 
       </div>
 

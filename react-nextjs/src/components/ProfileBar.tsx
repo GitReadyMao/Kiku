@@ -6,8 +6,13 @@ import GetUsername from './Username';
 import axios from 'axios';
 import router from 'next/router';
 import { getCsrfToken } from '@/util/token';
+import useUsername from "../pages/useUsername";
+
 
 function ProfileBar() {
+  const { username } = useUsername();
+
+
   const handlelogout = async () => {
     const apiClient = axios.create({
       baseURL: "http://localhost:8080",
@@ -36,7 +41,7 @@ function ProfileBar() {
         <Nav className="me-auto">
           <Nav.Link href="/Leaderboards">Leaderboards</Nav.Link>
         </Nav>
-        <NavDropdown title={GetUsername()} id="navbarScrollingDropdown">
+        <NavDropdown title={username} id="navbarScrollingDropdown">
           <NavDropdown.Item href="/Profile">Profile</NavDropdown.Item>
           <NavDropdown.Divider />
           <NavDropdown.Item onClick={handlelogout}>
