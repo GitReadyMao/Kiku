@@ -68,13 +68,13 @@ export default function Leaderboards() {
                 >
                   <td>{index + 1}</td>
                   <td>{user.username}</td>
-                  <td>{user.points}</td>
+                  <td>{"🌟"}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
         ) : (
-          <p className="text-center">No leaderboard data available.</p>
+          <p className="text-center">You're not in a group! Join one and compete for the best score with your friends!.</p>
         )}
       </Container>
 

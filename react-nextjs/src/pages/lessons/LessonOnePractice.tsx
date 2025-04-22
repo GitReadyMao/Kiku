@@ -10,6 +10,7 @@ import axios from "axios";
 import { getCsrfToken } from "@/util/token";
 import shuffleArray from "@/util/shuffle";
 
+
 export default function LessonOne() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const question = questionBank[currentQuestionIndex];
@@ -38,16 +39,43 @@ export default function LessonOne() {
         } else {
             setShowResults(true);  //Show results screen after quiz is completed
         }
-    };
+    }; 
+
+    const updateScore= async (newScore: any) => {
+        try {
+          const apiClient = axios.create({
+            baseURL: "http://localhost:8080",
+            withCredentials: true,
+          });
+    
+          await apiClient.put("/api/v1/pointUpdate", {
+            correctAnswersCount: newScore,
+          }, {
+            headers: {
+              "X-CSRF-Token": getCsrfToken(),
+              "ID": currentQuestionIndex
+            }
+          });
+    
+          //alert("update successful");
+        } catch (error: any) {
+          //alert("Failed to update user");
+        }
+      };
+    
+
 
     return (
         <>
             <br />
             <ProfileBar />
+            
+            
 
             {showResults ? ( //handles displaying results
                 <div className="text-center">
                     <h2 className="mt-3">Lesson completed!</h2>
+                                       
                     <Button variant="primary" className="mt-3" onClick={() => window.location.reload()}>
                         Restart Quiz
                     </Button>

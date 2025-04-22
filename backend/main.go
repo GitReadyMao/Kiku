@@ -79,6 +79,7 @@ func main() {
 
 		//leaderboard routes
 		v1.GET("points", getPoints) // get points of all members in a group
+		v1.PUT("pointUpdate", updateScore)
 	}
 
 	// By default it serves on :8080 unless a
@@ -737,6 +738,20 @@ func invite(c *gin.Context) {
 	}
 
 	db.Model(&newGroup).Where("name = ?", partOf.GroupName).Updates(models.Group{InviteCode: generateInviteCode(c)})
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Successfully created invite code"})
+}
+func updateScore(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	id := c.Request.Header.Get("ID")
+
+	var scores models.Studies
+
+	db.Model(&scores).Where("term_id = ?", id).Updates(models.Studies{Level: scores.Level + 1})
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Successfully created invite code"})
 }
