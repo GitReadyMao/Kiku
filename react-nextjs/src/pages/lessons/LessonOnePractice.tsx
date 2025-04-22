@@ -45,37 +45,39 @@ export default function LessonOne() {
 
     async function getTerms() {
         setLoading(true);
-
+    
         const apiClient = axios.create({
             baseURL: "http://localhost:8080",
             withCredentials: true,
         });
-
-        await apiClient.get(`/api/v1/term`, {
+    
+        const fetchTerm = await apiClient.get(`/api/v1/term`, {
             headers: {
                 'X-CSRF-Token': getCsrfToken(),
                 'Lesson': 1,
             }
-        }).then((response) => {
-            setTermId(response.data.data.term_id);
-            console.log("change to", termId)
         }).catch(err => console.error(err));
-
-        await apiClient.get(`/api/v1/question-terms`, {
+    
+        const newTermId = fetchTerm?.data.data.term_id;
+        setTermId(fetchTerm?.data.data.term_id);
+    
+        const questionResponse = await apiClient.get(`/api/v1/question-terms`, {
             headers: {
                 'X-CSRF-Token': getCsrfToken(),
-                'ID': termId,
+                'ID': newTermId,
             }
-        }).then((response) => {
-            setAnswer(response.data.term);
-            var choices: Array<any> = response.data.choices;
-            choices.push(response.data.term);
+        }).catch(err => console.error(err));
+    
+        if (questionResponse) {
+            setAnswer(questionResponse.data.term);
+            const choices = [...questionResponse.data.choices, questionResponse.data.term];
             shuffleArray(choices);
             setQuestionTerms(choices);
-        }).catch(err => console.error(err));
-
+        }
+    
         setLoading(false);
-
+        
+        console.log("tc", termCount)
         console.log("t", termId)
         console.log("a", answer)
         console.log("q", questionTerms)
@@ -115,19 +117,17 @@ export default function LessonOne() {
             console.log("Fuck you chuddy");
         }
     };
-    const handleNextQuestion = () => {
-        if (termCount > 0) {
-            setShowResults(false);
-            getTerms();
-            setSelectedAnswer(null); // Reset selection for the new question
-        }
-        else {
-            setShowResults(true);  //Show results screen after quiz is completed
-        }
+   const handleNextQuestion = async () => {
+    if (termCount > 0) {
+        setShowResults(false);
+        await getTerms();
+        await getTermCount(); 
+        setSelectedAnswer(null);
+        setTermCount(prev => prev - 1);
+    } else {
+        setShowResults(true); //end quiz when termCount is 0.
     }
-    useEffect(() => {
-        handleNextQuestion();
-    }, [termCount]);
+};
 
     return (
         <>

@@ -97,7 +97,7 @@ export default function LessonOne() {
         </p>
         <p />
         <div className="w3-center w3-margin-top">
-          <Link href="LessonOne">
+          <Link href="LessonOnePractice">
             <button
               onClick={InitializeLesson}
               className="btn "
