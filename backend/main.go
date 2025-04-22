@@ -514,7 +514,7 @@ func join(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": part_result.Error})
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Successfully joined group: " + newGroup.Name})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully joined group: " + newGroup.Name})
 }
 
 func leave(c *gin.Context) {
@@ -561,7 +561,7 @@ func leave(c *gin.Context) {
 
 	db.Where("username = ?", newPart.Username).Delete(&newPart)
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Successfully left group: " + newGroup.Name})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully left group: " + newGroup.Name})
 }
 
 func disband(c *gin.Context) {
