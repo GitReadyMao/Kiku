@@ -71,6 +71,9 @@ func main() {
 		v1.PUT("invite", invite)
 		v1.DELETE("leave", leave)     // leave group
 		v1.DELETE("disband", disband) // delete group
+
+		//leaderboard routes
+		v1.GET("points", getPoints) // get points of all members in a group
 	}
 
 	// By default it serves on :8080 unless a
@@ -566,4 +569,24 @@ func lookup(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"username": username, "data": result})
 	}
+}
+
+func getPoints(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var partOf models.PartOf
+	username := getUsername(c)
+
+	group := db.First(&partOf, "username = ?", username)
+	if group.Error != nil {
+		//c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not part of a group"})
+		return
+	}
+	var result []map[string]interface{}
+	db.Model(&models.PartOf{}).Where("group_name = ?", partOf.GroupName).Joins("JOIN studies on studies.username = PartOf.username").Select("PartOf.username, sum(level) as points").Group(("PartOf.username")).Scan(&result)
+	c.JSON(http.StatusOK, result)
 }
