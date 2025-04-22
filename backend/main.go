@@ -430,7 +430,7 @@ func getQuestionTerms(c *gin.Context) {
 	if studyTerm.Level < 2 {
 		choices = append(choices, questionTerms[rand.Intn(len(questionTerms))])
 	} else if studyTerm.Level < 5 {
-		choices = append(choices, getRandomTerms(questionTerms, 3)...)
+		//	choices = append(choices, getRandomTerms(questionTerms, 3)...)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"term": term, "choices": choices})
