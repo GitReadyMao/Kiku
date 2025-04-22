@@ -454,7 +454,9 @@ func unite(c *gin.Context) {
 		return
 	}
 
-	//make new group
+	//make new group and set membercount to 1 when group created and set leader
+	newGroup.Leader = username
+	newGroup.MemberCount = 1
 	group_result := db.Create(&newGroup)
 	if group_result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": group_result.Error})
@@ -535,7 +537,17 @@ func leave(c *gin.Context) {
 		return
 	}
 
-	db.Model(&newGroup).Where("name = ?", newGroup.Name).Updates(models.Group{Name: newGroup.Name, MemberCount: newGroup.MemberCount - 1})
+	if newGroup.MemberCount <= 1 {
+        c.JSON(http.StatusForbidden, gin.H{
+            "error": "You are the only member in the group. Please disband it instead.",
+        })
+        return
+    }
+
+	//fixed decrement 
+	db.Model(&models.Group{}).Where("name = ?", newGroup.Name).
+    Update("member_count", gorm.Expr("member_count - ?", 1))
+
 
 	//fill in partof relation
 	var newPart models.PartOf
@@ -575,6 +587,11 @@ func disband(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
 		return
 	}
+	//check if user = leader
+	if group.Leader != username {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only the group leader can disband the group"})
+		return
+	}
 
 	//delete group
 	db.Where("name = ?", group.Name).Delete(&group)
@@ -610,4 +627,21 @@ func lookup(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
 		return
 	}
+
+	var partOf models.PartOf
+	username := getUsername(c)
+
+	result := db.Select("group_name").First(&partOf, "username = ?", username)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not part of a group"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"username": username,
+		"group":    partOf.GroupName,
+	})
 }
+
+
+
