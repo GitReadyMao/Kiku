@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"gshare.com/platform/models"
 )
@@ -21,7 +23,6 @@ func connectDatabase() error {
 	if err != nil {
 		panic("Error connecting/creating the sqlite db")
 	}
-	db.AutoMigrate(&models.User{})
 	return err
 }
 
@@ -40,7 +41,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "X-CSRF-Token", "Authorization", "Origin"},
+		AllowHeaders:     []string{"Content-Type", "X-CSRF-Token", "Authorization", "Origin", "Lesson", "ID"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
@@ -60,8 +61,11 @@ func main() {
 		v1.OPTIONS("user", options)
 
 		// term routes
-		v1.GET("nextterm", getNextTerm)
-		v1.POST("studyterm", studyTerm)
+		v1.GET("term", getNextTerm)
+		v1.GET("question-terms", getQuestionTerms)
+		v1.GET("term-count", getTermCount)
+		v1.POST("study-term", studyTerm)
+		v1.PUT("initialize-lesson", initializeLesson)
 
 		// group routes
 		v1.GET("group", getGroups) // get groups
@@ -94,7 +98,7 @@ func getUsers(c *gin.Context) {
 
 	//Start by reading in the sorting column and direction
 	var userQuery UserQuery
-	if err := c.ShouldBindJSON(&userQuery); err != nil {
+	if err := c.ShouldBindQuery(&userQuery); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -374,14 +378,82 @@ func getNextTerm(c *gin.Context) {
 		return
 	}
 
+	//Read the lesson from the header
+	lesson := c.Request.Header.Get("Lesson")
+
 	var nextTerm models.Studies
 
-	if err := db.Where("username = ?", getUsername(c)).Where("study_time < ?", time.Now()).Where("study_time = (?)", db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
+	if err := db.Table("Studies").Where("username = ? AND term_id IN (?) AND study_time < ? AND study_time = (?)",
+		getUsername(c),
+		db.Table("Term").Where("lesson = ?", lesson).Select("id"),
+		time.Now(),
+		db.Table("Studies").Where("username = ?", getUsername(c)).Select("MIN(study_time)")).First(&nextTerm).Error; err != nil {
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "No terms to study"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": nextTerm})
+}
+
+func getQuestionTerms(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	//Read the params from the header
+	id := c.Request.Header.Get("ID")
+
+	//Get the term (correct answer)
+	var term models.Term
+	if err := db.Table("Term").Where("id = ?", id).First(&term).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	var studyTerm models.Studies
+	if err := db.Table("Studies").Where("username = ? AND term_id = ?", getUsername(c), id).First(&studyTerm).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var questionTerms []models.Term
+	if err := db.Table("Term").Where("group_id = ? AND id <> ?", term.GroupId, id).Find(&questionTerms).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	choices := make([]models.Term, 0)
+	if studyTerm.Level < 2 {
+		choices = append(choices, questionTerms[rand.Intn(len(questionTerms))])
+	} else if studyTerm.Level < 5 {
+		choices = append(choices, getRandomTerms(questionTerms, 3)...)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"term": term, "choices": choices})
+}
+
+func getTermCount(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	//Read the lesson from the header
+	lesson := c.Request.Header.Get("Lesson")
+
+	var count int64
+	db.Table("Studies").Where("username = ? AND term_id IN (?) AND study_time < ?",
+		getUsername(c),
+		db.Table("Term").Where("lesson = ?", lesson).Select("id"),
+		time.Now()).Count(&count)
+
+	c.JSON(http.StatusOK, gin.H{"count": count})
 }
 
 func studyTerm(c *gin.Context) {
@@ -393,8 +465,8 @@ func studyTerm(c *gin.Context) {
 	}
 
 	type StudyQuery struct {
-		TermId   int
-		LevelMod int
+		TermId   int `json:"term_id"`
+		LevelMod int `json:"level_mod"`
 	}
 
 	//Start by reading in the term id and correctness
@@ -405,19 +477,64 @@ func studyTerm(c *gin.Context) {
 	}
 
 	//Get the current level
-	var level int
-	if err := db.Select("level").Where("username = ?", getUsername(c)).Where("term_id = ?", studyQuery.TermId).First(&level); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No such term"})
+	var studies models.Studies
+	if err := db.Table("Studies").Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).First(&studies).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
 
 	//Update the level
-	if err := db.Where("username = ?", getUsername(c)).Where("term_id = ?", studyQuery.TermId).Updates(models.Studies{Level: level + studyQuery.LevelMod, StudyTime: getSRSTime(level + studyQuery.LevelMod)}); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No such term"})
+	if studyQuery.LevelMod == -1 && studies.Level <= 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "Term Studied"})
+		return
+	}
+	if err := db.Where("username = ? AND term_id = ?", getUsername(c), studyQuery.TermId).Updates(models.Studies{Level: studies.Level + studyQuery.LevelMod, StudyTime: getSRSTime(studies.Level + studyQuery.LevelMod)}).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No such term; " + err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Term Studied"})
+}
+
+func initializeLesson(c *gin.Context) {
+
+	//Check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	type InitializeQuery struct {
+		Lesson int `json:"lesson"`
+	}
+
+	//Read the params
+	var initializeQuery InitializeQuery
+	if err := c.ShouldBindJSON(&initializeQuery); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	username := getUsername(c)
+
+	//Get terms
+	var terms []models.Term
+	if err := db.Table("Term").Where("lesson = ?", initializeQuery.Lesson).Find(&terms).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	//Parse the terms and add to studies
+	userTerms := make([]models.Studies, 0)
+	for _, term := range terms {
+		userTerms = append(userTerms, models.Studies{Username: username, TermId: term.Id, Level: 0, StudyTime: time.Now()})
+	}
+
+	if err := db.Table("Studies").Clauses(clause.OnConflict{DoNothing: true}).Create(userTerms).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Lesson initialized"})
 }
 
 func getGroups(c *gin.Context) {
@@ -541,16 +658,15 @@ func leave(c *gin.Context) {
 	}
 
 	if newGroup.MemberCount <= 1 {
-        c.JSON(http.StatusForbidden, gin.H{
-            "error": "You are the only member in the group. Please disband it instead.",
-        })
-        return
-    }
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "You are the only member in the group. Please disband it instead.",
+		})
+		return
+	}
 
-	//fixed decrement 
+	//fixed decrement
 	db.Model(&models.Group{}).Where("name = ?", newGroup.Name).
-    Update("member_count", gorm.Expr("member_count - ?", 1))
-
+		Update("member_count", gorm.Expr("member_count - ?", 1))
 
 	//fill in partof relation
 	var newPart models.PartOf
@@ -665,6 +781,3 @@ func getPoints(c *gin.Context) {
 	db.Model(&models.PartOf{}).Where("group_name = ?", partOf.GroupName).Joins("JOIN studies on studies.username = PartOf.username").Select("PartOf.username, sum(level) as points").Group(("PartOf.username")).Scan(&result)
 	c.JSON(http.StatusOK, result)
 }
-
-
-

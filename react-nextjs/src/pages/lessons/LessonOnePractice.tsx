@@ -2,10 +2,13 @@ import ProfileBar from "@/components/ProfileBar";
 import Button from "react-bootstrap/esm/Button";
 import { FaVolumeUp } from "react-icons/fa";
 import questionBank from "./LessonOneQuestions";
-import React, { useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import useSound from 'use-sound';
+import axios from "axios";
+import { getCsrfToken } from "@/util/token";
+import shuffleArray from "@/util/shuffle";
 
 export default function LessonOne() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -44,8 +47,7 @@ export default function LessonOne() {
 
             {showResults ? ( //handles displaying results
                 <div className="text-center">
-                    <h2 className="mt-3">Quiz completed!</h2>
-                    <h4>You got {correctAnswersCount} out of {questionBank.length} correct!</h4>
+                    <h2 className="mt-3">Lesson completed!</h2>
                     <Button variant="primary" className="mt-3" onClick={() => window.location.reload()}>
                         Restart Quiz
                     </Button>

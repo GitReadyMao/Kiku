@@ -14,9 +14,9 @@ type Term struct {
 	Id         int    `json:"id"`
 	Hiragana   string `json:"hiragana"`
 	Kanji      string `json:"kanji"`
-	Katakana   string `json:"katakana"`
 	Definition string `json:"definition"`
 	Lesson     int    `json:"lesson"`
+	GroupId    int    `json:"group_id"`
 }
 
 type Studies struct {

@@ -1,8 +1,14 @@
+import InitializeLesson from "@/components/InitializeLesson";
 import ProfileBar from "@/components/ProfileBar";
+import { getCsrfToken } from "@/util/token";
+import axios from "axios";
 import Link from 'next/link';
 
 
 export default function LessonOne() {
+  
+  
+
   return (
     <>
       <ProfileBar />
@@ -93,6 +99,7 @@ export default function LessonOne() {
         <div className="w3-center w3-margin-top">
           <Link href="LessonOnePractice">
             <button
+              onClick={InitializeLesson}
               className="btn "
               style={{
                 fontSize: 'clamp(14px, 4vw, 25px)', 
