@@ -61,11 +61,11 @@ func main() {
 		v1.OPTIONS("user", options)
 
 		// term routes
-		v1.GET("term", getNextTerm)
-		v1.GET("question-terms", getQuestionTerms)
-		v1.GET("term-count", getTermCount)
+		v1.GET("term/:lesson", getNextTerm)
+		v1.GET("question-terms/:id", getQuestionTerms)
+		v1.GET("term-count/:lesson", getTermCount)
 		v1.POST("study-term", studyTerm)
-		v1.PUT("initialize-lesson", initializeLesson)
+		v1.PUT("initialize-lesson/:lesson", initializeLesson)
 
 		// group routes
 		v1.GET("group", getGroups) // get groups
@@ -131,7 +131,7 @@ func getUsers(c *gin.Context) {
 
 	//Get the count
 	var count int64
-	db.Model(&models.User{}).Where("username LIKE ?", "%"+userQuery.SearchKey+"%").Or("email LIKE ?", "%"+userQuery.SearchKey+"%").Count(&count)
+	db.Table("Users").Where("username LIKE ?", "%"+userQuery.SearchKey+"%").Or("email LIKE ?", "%"+userQuery.SearchKey+"%").Count(&count)
 
 	c.JSON(http.StatusOK, gin.H{"count": count, "data": users})
 }
@@ -379,7 +379,7 @@ func getNextTerm(c *gin.Context) {
 	}
 
 	//Read the lesson from the header
-	lesson := c.Request.Header.Get("Lesson")
+	lesson := c.Param("lesson")
 
 	var nextTerm models.Studies
 
@@ -405,7 +405,7 @@ func getQuestionTerms(c *gin.Context) {
 	}
 
 	//Read the params from the header
-	id := c.Request.Header.Get("ID")
+	id := c.Param("id")
 
 	//Get the term (correct answer)
 	var term models.Term
@@ -445,7 +445,7 @@ func getTermCount(c *gin.Context) {
 	}
 
 	//Read the lesson from the header
-	lesson := c.Request.Header.Get("Lesson")
+	lesson := c.Param("Lesson")
 
 	var count int64
 	db.Table("Studies").Where("username = ? AND term_id IN (?) AND study_time < ?",
@@ -504,21 +504,12 @@ func initializeLesson(c *gin.Context) {
 		return
 	}
 
-	type InitializeQuery struct {
-		Lesson int `json:"lesson"`
-	}
-
-	//Read the params
-	var initializeQuery InitializeQuery
-	if err := c.ShouldBindJSON(&initializeQuery); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	lesson := c.Param("lesson")
 	username := getUsername(c)
 
 	//Get terms
 	var terms []models.Term
-	if err := db.Table("Term").Where("lesson = ?", initializeQuery.Lesson).Find(&terms).Error; err != nil {
+	if err := db.Table("Term").Where("lesson = ?", lesson).Find(&terms).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}

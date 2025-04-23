@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -55,11 +56,24 @@ func SetUpRouter() *gin.Engine {
 		v1.OPTIONS("user", options)
 
 		// term routes
-		v1.GET("term", getNextTerm)
-		v1.GET("question-terms", getQuestionTerms)
-		v1.GET("term-count", getTermCount)
+		v1.GET("term/:lesson", getNextTerm)
+		v1.GET("question-terms/:id", getQuestionTerms)
+		v1.GET("term-count/:lesson", getTermCount)
 		v1.POST("study-term", studyTerm)
-		v1.PUT("initialize-lesson", initializeLesson)
+		v1.PUT("initialize-lesson/:lesson", initializeLesson)
+
+		// group routes
+		v1.GET("group", getGroups) // get groups
+		//v1.GET("group/:")          // get group by name
+		v1.GET("lookup", lookup) // get user
+		v1.POST("unite", unite)  // create group
+		v1.POST("join", join)    // join group
+		v1.PUT("invite", invite)
+		v1.DELETE("leave", leave)     // leave group
+		v1.DELETE("disband", disband) // delete group
+
+		//leaderboard routes
+		v1.GET("points", getPoints) // get points of all members in a group
 	}
 
 	// By default it serves on :8080 unless a
@@ -267,6 +281,153 @@ func TestGetCurrentUser(t *testing.T) {
 	responseData, _ := io.ReadAll(w.Body)
 	assert.Equal(t, mockResponse, string(responseData))
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestInitializeLesson(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("PUT", "/api/v1/initialize-lesson/1", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "message")
+}
+
+func TestGetNextTerm(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/term/1", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "data")
+}
+
+func TestGetQuestionTerms(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/term/1", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	var termResp map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &termResp)
+	termId := termResp["data"].(map[string]interface{})["term_id"].(float64)
+
+	req, _ = http.NewRequest("GET", "/api/v1/question-terms/"+strconv.FormatFloat(termId, 'f', -1, 64), nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "term")
+	assert.Contains(t, w.Body.String(), "choices")
+}
+
+func TestGetTermCount(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/term-count/1", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "count")
+}
+
+func TestStudyTerm(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	type StudyQuery struct {
+		TermId   int `json:"term_id"`
+		LevelMod int `json:"level_mod"`
+	}
+	body := StudyQuery{
+		TermId:   1,
+		LevelMod: -1,
+	}
+
+	jsonValue, _ := json.Marshal(body)
+	req, _ := http.NewRequest("POST", "/api/v1/study-term", bytes.NewBuffer(jsonValue))
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "message")
 }
 
 func TestDeleteUser(t *testing.T) {

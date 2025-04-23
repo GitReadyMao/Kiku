@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"log"
-	random "math/rand"
+	random1 "math/rand"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -89,7 +89,7 @@ func getRandomTerms(array []models.Term, count int) []models.Term {
 
 func randomIndex(size int, existingIndexes map[int]struct{}) int {
 	for {
-		randomIndex := random.Intn(size)
+		randomIndex := random1.Intn(size)
 
 		_, exists := existingIndexes[randomIndex]
 		if !exists {
