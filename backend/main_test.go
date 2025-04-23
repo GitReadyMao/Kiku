@@ -1,0 +1,301 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"gshare.com/platform/models"
+)
+
+var testSessionToken string
+var testCSRFToken string
+
+func SetUpRouter() *gin.Engine {
+
+	//DEBUG CODE FOR RUNNING INDIVIDUAL UNIT TESTS -------------- DELETE
+	//testSessionToken = "B150Bbo7ogNjSvakXtWLHwBRa8FerS1K9SK7GPDhIos="
+	//testCSRFToken = "f3L_w5ZcPNLa9vAw8NCIUj5xegjcu0kNfBxguDjzmHA="
+	//DEBUG CODE FOR RUNNING INDIVIDUAL UNIT TESTS -------------- DELETE
+
+	r := gin.Default()
+
+	//COMMENT ONE TO CHANGE BETWEEN RUN MODES---------------------------------------------------------------
+	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.DebugMode)
+	//COMMENT ONE TO CHANGE BETWEEN RUN MODES---------------------------------------------------------------
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "X-CSRF-Token", "Authorization", "Origin", "Lesson", "ID"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
+	//API v1
+	v1 := r.Group("/api/v1")
+	{
+		// user routes
+		v1.GET("user", getUsers)
+		v1.GET("user/:username", getUserByUsername)
+		v1.POST("register", register)
+		v1.PUT("user", updateUser)
+		v1.DELETE("user", deleteUser)
+		v1.POST("login", login)
+		v1.POST("logout", logout)
+		v1.GET("current-user", getCurrentUser)
+		v1.OPTIONS("user", options)
+
+		// term routes
+		v1.GET("term", getNextTerm)
+		v1.GET("question-terms", getQuestionTerms)
+		v1.GET("term-count", getTermCount)
+		v1.POST("study-term", studyTerm)
+		v1.PUT("initialize-lesson", initializeLesson)
+	}
+
+	// By default it serves on :8080 unless a
+	// PORT environment variable was defined.
+	return r
+}
+
+func TestRegister(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	user := models.User{
+		Email:    "bettercallsaul@test.com",
+		Username: "saul",
+		Password: "Money123",
+	}
+
+	jsonValue, _ := json.Marshal(user)
+	req, _ := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(jsonValue))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	mockResponse := `{"message":"Successfully registered user: saul"}`
+	responseData, _ := io.ReadAll(w.Body)
+	assert.Equal(t, mockResponse, string(responseData))
+	assert.Equal(t, http.StatusCreated, w.Code)
+}
+
+func TestGetUsers(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/user?column=username&order=desc&limit=10&offset=0&search_key=test", nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "data")
+	assert.Contains(t, w.Body.String(), "count")
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	users := response["data"].([]interface{})
+	assert.NotEmpty(t, users)
+	count := response["count"]
+	assert.NotEmpty(t, count)
+}
+
+func TestGetUserByUsername(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	var user models.User
+	mockUser := models.User{
+		Email:    "bettercallsaul@test.com",
+		Username: "saul",
+		Password: "Money123",
+	}
+
+	req, _ := http.NewRequest("GET", "/api/v1/user/saul", nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	response := w.Body.String()[8 : len(w.Body.String())-1]
+	json.Unmarshal([]byte(response), &user)
+
+	testSessionToken = user.SessionToken
+	testCSRFToken = user.CSRFToken
+
+	assert.Equal(t, mockUser.Email, user.Email)
+	assert.Equal(t, mockUser.Username, user.Username)
+	assert.True(t, checkPasswordHash(mockUser.Password, user.Password))
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestLogout(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	user := models.User{
+		Username: "saul",
+		Password: "Money123",
+	}
+
+	jsonValue, _ := json.Marshal(user)
+	req, _ := http.NewRequest("POST", "/api/v1/logout", bytes.NewBuffer(jsonValue))
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	mockResponse := `{"message":"Logout successful"}`
+	responseData, _ := io.ReadAll(w.Body)
+	assert.Equal(t, mockResponse, string(responseData))
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestLogin(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	user := models.User{
+		Username: "saul",
+		Password: "Money123",
+	}
+
+	jsonValue, _ := json.Marshal(user)
+	req, _ := http.NewRequest("POST", "/api/v1/login", bytes.NewBuffer(jsonValue))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	cookies := w.Result().Cookies()
+	testSessionToken = cookies[0].Value[:len(cookies[0].Value)-3] + "="
+	testCSRFToken = cookies[1].Value[:len(cookies[1].Value)-3] + "="
+
+	mockResponse := `{"message":"Login successful"}`
+	responseData, _ := io.ReadAll(w.Body)
+	assert.Equal(t, mockResponse, string(responseData))
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestUpdateUser(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	type UpdateRequest struct {
+		CurrentPassword string `json:"currentPassword"`
+		NewUsername     string `json:"username"`
+		NewEmail        string `json:"email"`
+		NewPassword     string `json:"newPassword"`
+	}
+
+	var user models.User
+	updateReq := UpdateRequest{
+		CurrentPassword: "Money123",
+		NewEmail:        "updated@test.com",
+		NewUsername:     "saul",
+		NewPassword:     "Lawyering",
+	}
+
+	jsonValue, _ := json.Marshal(updateReq)
+	req, _ := http.NewRequest("PUT", "/api/v1/user", bytes.NewBuffer(jsonValue))
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	response := w.Body.String()[8 : len(w.Body.String())-1]
+	json.Unmarshal([]byte(response), &user)
+
+	assert.Equal(t, updateReq.NewEmail, user.Email)
+	assert.Equal(t, updateReq.NewUsername, user.Username)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestGetCurrentUser(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/current-user", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	mockResponse := `{"username":"saul"}`
+	responseData, _ := io.ReadAll(w.Body)
+	assert.Equal(t, mockResponse, string(responseData))
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestDeleteUser(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	user := models.User{
+		Username: "saul",
+	}
+
+	jsonValue, _ := json.Marshal(user)
+	req, _ := http.NewRequest("DELETE", "/api/v1/user", bytes.NewBuffer(jsonValue))
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	mockResponse := `{"message":"User deleted successfully"}`
+	responseData, _ := io.ReadAll(w.Body)
+	assert.Equal(t, mockResponse, string(responseData))
+	assert.Equal(t, http.StatusOK, w.Code)
+}
