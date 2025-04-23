@@ -66,6 +66,19 @@ func main() {
 		v1.GET("term-count", getTermCount)
 		v1.POST("study-term", studyTerm)
 		v1.PUT("initialize-lesson", initializeLesson)
+
+		// group routes
+		v1.GET("group", getGroups) // get groups
+		//v1.GET("group/:")          // get group by name
+		v1.GET("lookup", lookup) // get user
+		v1.POST("unite", unite)  // create group
+		v1.POST("join", join)    // join group
+		v1.PUT("invite", invite)
+		v1.DELETE("leave", leave)     // leave group
+		v1.DELETE("disband", disband) // delete group
+
+		//leaderboard routes
+		v1.GET("points", getPoints) // get points of all members in a group
 	}
 
 	// By default it serves on :8080 unless a
@@ -522,4 +535,231 @@ func initializeLesson(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Lesson initialized"})
+}
+
+func getGroups(c *gin.Context) {
+	var groups []models.Group
+
+	result := db.Find(&groups)
+
+	checkErr(result.Error)
+
+	if groups == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No Groups Found"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"data": groups})
+	}
+}
+
+func unite(c *gin.Context) {
+	//check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var newGroup models.Group
+	username := getUsername(c)
+
+	//check format is correct
+	if err := c.ShouldBindJSON(&newGroup); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	//check if group already exists
+	if err := db.First(&newGroup, "name = ?", newGroup.Name).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Group name already exists"})
+		return
+	}
+
+	//make new group
+	group_result := db.Create(&newGroup)
+	if group_result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": group_result.Error})
+	}
+
+	//fill in partof relation
+	var newPart = models.PartOf{GroupName: newGroup.Name, Username: username}
+	//newPart.GroupName = newGroup.Name
+	//newPart.Username = username
+
+	//make new partof relation
+	part_result := db.Create(&newPart)
+	if part_result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": part_result.Error})
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Successfully created group: " + newGroup.Name})
+}
+
+func join(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	type JoinQuery struct {
+		GroupCode string `json:"group_code"`
+	}
+	var jquery JoinQuery
+
+	var newGroup models.Group
+	username := getUsername(c)
+
+	//check format is correct
+	if err := c.ShouldBindJSON(&jquery); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := db.First(&newGroup, "invite_code = ?", jquery.GroupCode).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		return
+	}
+
+	db.Model(&newGroup).Where("name = ?", newGroup.Name).Updates(models.Group{MemberCount: newGroup.MemberCount + 1})
+
+	//fill in partof relation
+	var newPart models.PartOf
+	newPart.GroupName = newGroup.Name
+	newPart.Username = username
+
+	//make new partof relation
+	part_result := db.Create(&newPart)
+	if part_result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": part_result.Error})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully joined group: " + newGroup.Name})
+}
+
+func leave(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var newGroup models.Group
+	username := getUsername(c)
+
+	//check format is correct
+	if err := c.ShouldBindJSON(&newGroup); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := db.First(&newGroup, "name = ?", newGroup.Name).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		return
+	}
+
+	db.Model(&newGroup).Where("name = ?", newGroup.Name).Updates(models.Group{Name: newGroup.Name, MemberCount: newGroup.MemberCount - 1})
+
+	//fill in partof relation
+	var newPart models.PartOf
+	//newPart.GroupName = newGroup.Name
+	//newPart.Username = username
+
+	if err := db.First(&newPart, "username = ?", username).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
+		return
+	}
+
+	db.Where("username = ?", newPart.Username).Delete(&newPart)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully left group: " + newGroup.Name})
+}
+
+func disband(c *gin.Context) {
+	//check if user is logged in
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	username := getUsername(c)
+
+	var group models.Group
+	var part models.PartOf
+
+	//find user in partof to get group
+	if err := db.First(&part, "username = ?", username).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
+		return
+	}
+
+	//find group in group table
+	if err := db.First(&group, "name = ?", part.GroupName).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
+		return
+	}
+
+	//delete group
+	db.Where("name = ?", group.Name).Delete(&group)
+	//delete users from partof table
+	db.Where("group_name = ?", group.Name).Delete(&models.PartOf{})
+	c.JSON(http.StatusOK, gin.H{"message": "Group deleted successfully"})
+}
+
+func invite(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var partOf models.PartOf
+	var newGroup models.Group
+	username := getUsername(c)
+
+	partOf.Username = username
+
+	if err := db.First(&partOf, "username = ?", username).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		return
+	}
+
+	db.Model(&newGroup).Where("name = ?", partOf.GroupName).Updates(models.Group{InviteCode: generateInviteCode(c)})
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Successfully created invite code"})
+}
+
+func lookup(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var partOf models.PartOf
+	username := getUsername(c)
+
+	result := db.Select("group_name").First(&partOf, "username = ?", username)
+	if result.Error != nil {
+		//c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not part of a group"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"username": username, "data": result})
+	}
+}
+
+func getPoints(c *gin.Context) {
+	if err := Authorize(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	var partOf models.PartOf
+	username := getUsername(c)
+
+	group := db.First(&partOf, "username = ?", username)
+	if group.Error != nil {
+		//c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not part of a group"})
+		return
+	}
+	var result []map[string]interface{}
+	db.Model(&models.PartOf{}).Where("group_name = ?", partOf.GroupName).Joins("JOIN studies on studies.username = PartOf.username").Select("PartOf.username, sum(level) as points").Group(("PartOf.username")).Scan(&result)
+	c.JSON(http.StatusOK, result)
 }
