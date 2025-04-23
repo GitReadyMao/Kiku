@@ -70,9 +70,9 @@ func main() {
 		// group routes
 		v1.GET("group", getGroups) // get groups
 		//v1.GET("group/:")          // get group by name
-		v1.GET("lookup", lookup) // get user
-		v1.POST("unite", unite)  // create group
-		v1.POST("join", join)    // join group
+		v1.GET("lookup", lookup)      // get user
+		v1.POST("unite/:name", unite) // create group
+		v1.POST("join/:invite", join) // join group
 		v1.PUT("invite", invite)
 		v1.DELETE("leave", leave)     // leave group
 		v1.DELETE("disband", disband) // delete group
@@ -335,14 +335,8 @@ func deleteUser(c *gin.Context) {
 
 	username := getUsername(c)
 
-	var user models.User
-
-	if err := db.First(&user, "username = ?", username).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found"})
-		return
-	}
-
-	db.Delete(&user, "username = ?", username)
+	db.Delete(&models.User{}, "username = ?", username)
+	db.Delete(&models.Studies{}, "username = ?", username)
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
@@ -550,20 +544,20 @@ func unite(c *gin.Context) {
 		return
 	}
 
+	groupName := c.Param("name")
+
 	var newGroup models.Group
 	username := getUsername(c)
 
-	//check format is correct
-	if err := c.ShouldBindJSON(&newGroup); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	//check if group already exists
-	if err := db.First(&newGroup, "name = ?", newGroup.Name).Error; err == nil {
+	if err := db.First(&newGroup, "name = ?", groupName).Error; err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Group name already exists"})
 		return
 	}
+
+	newGroup.Name = groupName
+	newGroup.Leader = username
+	newGroup.MemberCount = 1
 
 	//make new group
 	group_result := db.Create(&newGroup)
@@ -591,21 +585,12 @@ func join(c *gin.Context) {
 		return
 	}
 
-	type JoinQuery struct {
-		GroupCode string `json:"group_code"`
-	}
-	var jquery JoinQuery
+	inviteCode := c.Param("invite")
 
 	var newGroup models.Group
 	username := getUsername(c)
 
-	//check format is correct
-	if err := c.ShouldBindJSON(&jquery); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := db.First(&newGroup, "invite_code = ?", jquery.GroupCode).Error; err != nil {
+	if err := db.First(&newGroup, "invite_code = ?", inviteCode).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
 		return
 	}
@@ -725,14 +710,13 @@ func lookup(c *gin.Context) {
 	var partOf models.PartOf
 	username := getUsername(c)
 
-	result := db.Select("group_name").First(&partOf, "username = ?", username)
+	result := db.First(&partOf, "username = ?", username)
 	if result.Error != nil {
 		//c.JSON(http.StatusBadRequest, gin.H{"error": "Group does not exist"})
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not part of a group"})
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"username": username, "data": result})
 	}
+	c.JSON(http.StatusOK, gin.H{"username": username, "data": partOf})
 }
 
 func getPoints(c *gin.Context) {
@@ -752,5 +736,5 @@ func getPoints(c *gin.Context) {
 	}
 	var result []map[string]interface{}
 	db.Model(&models.PartOf{}).Where("group_name = ?", partOf.GroupName).Joins("JOIN studies on studies.username = PartOf.username").Select("PartOf.username, sum(level) as points").Group(("PartOf.username")).Scan(&result)
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, gin.H{"data": result})
 }

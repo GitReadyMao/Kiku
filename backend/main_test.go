@@ -65,9 +65,9 @@ func SetUpRouter() *gin.Engine {
 		// group routes
 		v1.GET("group", getGroups) // get groups
 		//v1.GET("group/:")          // get group by name
-		v1.GET("lookup", lookup) // get user
-		v1.POST("unite", unite)  // create group
-		v1.POST("join", join)    // join group
+		v1.GET("lookup", lookup)      // get user
+		v1.POST("unite/:name", unite) // create group
+		v1.POST("join/:invite", join) // join group
 		v1.PUT("invite", invite)
 		v1.DELETE("leave", leave)     // leave group
 		v1.DELETE("disband", disband) // delete group
@@ -412,6 +412,141 @@ func TestStudyTerm(t *testing.T) {
 
 	jsonValue, _ := json.Marshal(body)
 	req, _ := http.NewRequest("POST", "/api/v1/study-term", bytes.NewBuffer(jsonValue))
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "message")
+}
+
+func TestGetGroups(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/group", nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "data")
+}
+
+func TestCreateGroup(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("POST", "/api/v1/unite/test-group", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, w.Body.String(), "message")
+}
+
+func TestLookupGroup(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/lookup", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "username")
+	assert.Contains(t, w.Body.String(), "data")
+}
+
+func TestInviteGroup(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("PUT", "/api/v1/invite", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, w.Body.String(), "message")
+}
+
+func TestGetPoints(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("GET", "/api/v1/points", nil)
+	req.AddCookie(&http.Cookie{
+		Name:     "session_token",
+		Value:    testSessionToken,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   false,
+		HttpOnly: true,
+	})
+	req.Header.Add("X-CSRF-Token", testCSRFToken)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "data")
+}
+
+func TestDisbandGroup(t *testing.T) {
+	err := connectDatabase()
+	checkErr(err)
+	r := SetUpRouter()
+
+	req, _ := http.NewRequest("DELETE", "/api/v1/disband", nil)
 	req.AddCookie(&http.Cookie{
 		Name:     "session_token",
 		Value:    testSessionToken,
