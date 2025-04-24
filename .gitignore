@@ -32,5 +32,4 @@ Thumbs.db
 # Folders to ignore
 dist
 node_modules
-backend/kiku.db
 backend/platform.exe
