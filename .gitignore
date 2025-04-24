@@ -32,4 +32,3 @@ Thumbs.db
 # Folders to ignore
 dist
 node_modules
-backend/platform.exe
