@@ -30,11 +30,11 @@
     "use-sound": "^5.0.0"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.17",
-    "eslint": "^9.20.0",
-    "eslint-config-next": "^15.1.6",
+    "@types/nodemailer": "^7.0.1",
+    "eslint": "^9.34.0",
+    "eslint-config-next": "^15.5.2",
     "file-loader": "^6.2.0",
-    "sass": "^1.84.0",
+    "sass": "^1.91.0",
     "url-loader": "^4.1.1"
   }
 }
